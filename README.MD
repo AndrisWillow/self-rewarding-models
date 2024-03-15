@@ -1,4 +1,4 @@
-** Self Rewarding Language models **
+# Self Rewarding Language models
 
 Tested on Python 3.10.12
 Packages:
