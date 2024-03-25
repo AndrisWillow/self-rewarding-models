@@ -1,4 +1,4 @@
-** Self Rewarding Language models **
+# Self Rewarding Language models
 
 Tested on Python 3.10.12
 Packages:
@@ -12,9 +12,9 @@ Launch container:
 docker compose up --build
 ```
 
-Launch app:
+Launch app in the container (update this with service name):
 ```
-docker compose exec 
+docker exec -ti {container_id} sh
 ```
 
 Shutdown:
