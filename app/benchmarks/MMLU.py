@@ -1,9 +1,11 @@
-from deepeval.benchmarks import HellaSwag
-from deepeval.benchmarks.tasks import HellaSwagTask
+from deepeval.benchmarks import MMLU
+from deepeval.benchmarks.tasks import MMLUTask
 
 from awq import AutoAWQForCausalLM
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextStreamer
 from deepeval.models.base_model import DeepEvalBaseLLM
+
+# TODO Figure out which relevant tasks to evaluate against
 
 class Mistral7B_AWQ(DeepEvalBaseLLM):
     def __init__(
@@ -35,10 +37,10 @@ class Mistral7B_AWQ(DeepEvalBaseLLM):
         generated_ids = model.generate(
             input_ids,
             max_new_tokens=1,  # Specify the number of new tokens to generate
-            do_sample=True,  # Enable sampling to generate more diverse outputs
-            temperature=1, # randomness in sampling (higher temp, more creative, but more random, lower, more predictable), effects logits
-            top_p=1, # Limits the set of posible next tokens. Does so by cumulatively selecting the most probable tokens from a prob. distribution until it reaches the limit
-            top_k=1,   # Limits the options to the {top_k} most likely options
+            # do_sample=True,  # Enable sampling to generate more diverse outputs
+            # temperature=1, # randomness in sampling (higher temp, more creative, but more random, lower, more predictable), effects logits
+            # top_p=1, # Limits the set of posible next tokens. Does so by cumulatively selecting the most probable tokens from a prob. distribution until it reaches the limit
+            # top_k=1,   # Limits the options to the {top_k} most likely options
         )
 
         # Decode only the newly generated tokens, ignoring the input part
@@ -51,7 +53,7 @@ class Mistral7B_AWQ(DeepEvalBaseLLM):
     async def a_generate(self, prompt: str) -> str:
         return self.generate(prompt)
 
-model_name_or_path = "TheBloke/Mistral-7B-Instruct-v0.2-AWQ" #TheBloke/Mistral-7B-v0.1-AWQ #TheBloke/Mistral-7B-Instruct-v0.2-AWQ #solidrust/Nous-Hermes-2-Mistral-7B-DPO-AWQ
+model_name_or_path = "solidrust/Nous-Hermes-2-Mistral-7B-DPO-AWQ" #TheBloke/Mistral-7B-v0.1-AWQ #TheBloke/Mistral-7B-Instruct-v0.2-AWQ #solidrust/Nous-Hermes-2-Mistral-7B-DPO-AWQ
 
 model = AutoAWQForCausalLM.from_quantized(model_name_or_path, fuse_layers=True,
                                           trust_remote_code=False, safetensors=True)
@@ -59,9 +61,9 @@ tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=
 
 mistral_7b = Mistral7B_AWQ(model=model, tokenizer=tokenizer)
 
-benchmark = HellaSwag(
-    tasks=[HellaSwagTask.TRIMMING_BRANCHES_OR_HEDGES, HellaSwagTask.BATON_TWIRLING, HellaSwagTask.APPLYING_SUNSCREEN, HellaSwagTask.ASSEMBLING_BICYCLE, HellaSwagTask.ARCHERY],
-    n_shots=0
+benchmark = MMLU(
+    tasks=[MMLUTask.HIGH_SCHOOL_COMPUTER_SCIENCE, MMLUTask.ASTRONOMY],
+    n_shots=5
 )
 
 benchmark.evaluate(model=mistral_7b)

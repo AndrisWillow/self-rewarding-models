@@ -1,0 +1,9 @@
+challange: TheBloke/Mistral-7B-Instruct-v0.2-AWQ
+0.5273037542662116
+0.5273037542662116
+
+solidrust/Nous-Hermes-2-Mistral-7B-DPO-AWQ
+0.5273037542662116
+
+TheBloke/Mistral-7B-v0.1-AWQ:
+Always outputs "1"

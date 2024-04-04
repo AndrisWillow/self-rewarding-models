@@ -1,0 +1,24 @@
+Mistral 7B - 60.1 baseline
+
+Tasks ran on: MMLUTask.HIGH_SCHOOL_COMPUTER_SCIENCE, MMLUTask.ASTRONOMY
+
+0- shot
+TheBloke/Mistral-7B-Instruct-v0.2-AWQ
+0.53
+
+1-shot
+0.575
+
+TheBloke/Mistral-7B-v0.1-AWQ
+0.54
+
+1-shot
+0.415 - more sensetive to noise?
+
+
+solidrust/Nous-Hermes-2-Mistral-7B-DPO-AWQ:
+0-shot:
+0.62
+
+1-shot:
+0.62
