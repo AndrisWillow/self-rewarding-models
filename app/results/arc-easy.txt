@@ -1,0 +1,11 @@
+TheBloke/Mistral-7B-Instruct-v0.2-AWQ
+train: 0.643269657929809
+test: 0.6376262626262627
+
+solidrust/Nous-Hermes-2-Mistral-7B-DPO-AWQ
+test:
+0.8118686868686869
+
+TheBloke/Mistral-7B-v0.1-AWQ
+TheBloke/Mistral-7B-v0.1-AWQ:
+Always outputs "1"
