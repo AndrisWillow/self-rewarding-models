@@ -1,6 +1,6 @@
 autoawq==0.2.3
 awq==0.1.0
 datasets==2.18.0
-deepeval==0.21.0
+peft==0.10.0
 torch==2.2.1
 transformers==4.38.2
