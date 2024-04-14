@@ -1,3 +1,5 @@
+# Baseline - 55.5
+
 challange: TheBloke/Mistral-7B-Instruct-v0.2-AWQ
 0.5273037542662116
 0.5273037542662116
@@ -7,3 +9,54 @@ solidrust/Nous-Hermes-2-Mistral-7B-DPO-AWQ
 
 TheBloke/Mistral-7B-v0.1-AWQ:
 Always outputs "1"
+
+TheBloke/Mistral-7B-v0.1-GPTQ:
+Always outputs "1"
+
+TheBloke/Mistral-7B-Instruct-v0.2-GPTQ - fine-tuned(a little bit)
+0.4283276450511945
+
+TheBloke/Mistral-7B-Instruct-v0.2-GPTQ
+0.4283276450511945
+
+
+
+mistralai/Mistral-7B-Instruct-v0.2 (Quanitzed using bitsandbytes)
+0.5435153583617748
+
+Mistral-7B-Instruct-v0.2-arcSFT 1 epoch
+Result: 0.6552901023890785
+
+Mistral-7B-Instruct-v0.2-arcSFT - 3 epochs
+(Halucinates answers that are not there, likely from Overfitting)
+0.6186006825938567
+
+Training params:
+TrainingArguments(
+        per_device_train_batch_size=batch_size,
+        per_device_eval_batch_size=batch_size,
+        gradient_accumulation_steps=4,
+        num_train_epochs=num_epochs,
+        weight_decay=0.01,
+        # warmup_steps=2,
+        # max_steps=10, #             If set to a positive number, the total number of training steps to perform. Overrides `num_train_epochs`.
+                      #For a finite dataset, training is reiterated through the dataset (if all data is exhausted) until
+                      #`max_steps` is reached.
+        learning_rate=1e-4,
+        evaluation_strategy="epoch",
+        save_strategy="epoch",
+        fp16=True, # enable for A100
+        logging_steps=1,
+        output_dir="outputs",
+        optim="paged_adamw_8bit",
+        load_best_model_at_end=True,
+    )
+
+    config = LoraConfig(
+    r=16, 
+    lora_alpha=16, #default 16, should not be modified
+    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj"], # All layers "q_proj", "k_proj", "v_proj", "o_proj", "gate_proj"
+    lora_dropout=0.05, 
+    bias="none", 
+    task_type="CAUSAL_LM"
+)

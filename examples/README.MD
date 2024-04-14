@@ -1,0 +1,1 @@
+# Some useful code snipets to run for sanity checks
