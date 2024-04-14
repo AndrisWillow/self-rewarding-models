@@ -89,7 +89,7 @@ model.config.use_cache = False  # silence the warnings. re-enable for inference!
 
 trainer.train()
 
-model.save_pretrained("./mistralai/Mistral-7B-Instruct-v0.2-arcSFT")
-tokenizer.save_pretrained("./mistralai/Mistral-7B-Instruct-v0.2-arcSFT")
+model.save_pretrained("./outputs/Mistral-7B-Instruct-v0.2-arcSFT")
+tokenizer.save_pretrained("./outputs/Mistral-7B-Instruct-v0.2-arcSFT")
 
 # TODO Merge the weights?
