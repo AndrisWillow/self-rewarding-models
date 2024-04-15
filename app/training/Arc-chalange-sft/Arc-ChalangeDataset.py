@@ -3,15 +3,13 @@ import pandas as pd
 import os
 
 # Preparing arc dataset for training
-def format_dataset(dataset, include_answer=True):
+def format_dataset(dataset):
     formatted_data = []
 
     for row in dataset:
         question = row['question']
-        answerKey = ""
-        choices_formatted = " ".join([f"{label}: {text}" for label, text in zip(row['choices']['label'], row['choices']['text'])])
-        # if include_answer:
         answerKey = row['answerKey']
+        choices_formatted = " ".join([f"{label}: {text}" for label, text in zip(row['choices']['label'], row['choices']['text'])])
 
         text = (f"Answer this multiple choice question."
                 f"Question: {question} Possible answers: {choices_formatted}"
@@ -26,8 +24,8 @@ train_ds = load_dataset("allenai/ai2_arc", 'ARC-Challenge', split="train")
 validation_ds = load_dataset("allenai/ai2_arc", 'ARC-Challenge', split="validation")
 
 # Format the datasets
-train_df = format_dataset(train_ds, include_answer=True)
-validation_df = format_dataset(validation_ds, include_answer=False)
+train_df = format_dataset(train_ds)
+validation_df = format_dataset(validation_ds)
 
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))

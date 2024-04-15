@@ -14,3 +14,10 @@ Links to Papers:
   journal={arXiv preprint arXiv:2305.14314},
   year={2023}
 }
+
+@article{zhou2023instruction,
+  title={Instruction-Following Evaluation for Large Language Models},
+  author={Zhou, Jeffrey and Lu, Tianjian and Mishra, Swaroop and Brahma, Siddhartha and Basu, Sujoy and Luan, Yi and Zhou, Denny and Hou, Le},
+  journal={arXiv preprint arXiv:2311.07911},
+  year={2023}
+}
