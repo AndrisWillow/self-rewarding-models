@@ -19,11 +19,11 @@ device = "cuda"
 tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=False)
 
 # With adapter
-relative_path = 'outputs/checkpoint-70' # outputs/Mistral-7B-Instruct-v0.2-arcSFT
-adapter_path = os.path.abspath(relative_path)
-print("Absolute path:", adapter_path)
-model = PeftModel.from_pretrained(model, adapter_path)
-model.eval()
+# relative_path = 'outputs/Mistral-7B-Instruct-v0.2-openassistant-guanaco' # outputs/Mistral-7B-Instruct-v0.2-arcSFT
+# adapter_path = os.path.abspath(relative_path)
+# print("Absolute path:", adapter_path)
+# model = PeftModel.from_pretrained(model, adapter_path)
+# model.eval()
 
 # Load dataset
 dataset = load_dataset('ai2_arc', 'ARC-Challenge', split="test")
@@ -37,8 +37,7 @@ for row in dataset:
     choices_formatted = " ".join([f"{label}: {text}" for label, text in zip(row['choices']['label'], row['choices']['text'])])
 
     prompt=f'''Answer this multiple choice question. 
-    Question: {question} Posible answers: {choices_formatted} Output only the corresponding letter to the correct answer. Answer:
-    '''
+    Question: {question} Posible answers: {choices_formatted} Output only the corresponding letter to the correct answer. Answer: '''
 
     model_inputs = tokenizer(prompt, return_tensors="pt")
 
@@ -64,7 +63,7 @@ for row in dataset:
     output = tokenizer.decode(new_tokens, skip_special_tokens=True)
 
     # Compare output
-    print(f'\n {prompt} Expected: {answerKey} Got: {output} Score: {Score}')
+    print(f'\n {prompt} \n Expected: {answerKey} Got: {output} Score: {Score}')
     if output == answerKey:
         Score += 1
 

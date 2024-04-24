@@ -25,8 +25,7 @@ for row in dataset:
     choices_formatted = " ".join([f"{label}: {text}" for label, text in zip(row['choices']['label'], row['choices']['text'])])
 
     prompt=f'''Answer this multiple choice question. 
-    Question: {question} Posible answers: {choices_formatted} Output only the corresponding letter to the correct answer. Answer:
-    '''
+    Question: {question} Posible answers: {choices_formatted} Output only the corresponding letter to the correct answer. Answer: '''
 
     model_inputs = tokenizer(prompt, return_tensors="pt")
 

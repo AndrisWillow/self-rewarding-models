@@ -23,11 +23,11 @@ model = AutoModelForCausalLM.from_pretrained(model_name_or_path, quantization_co
 device = "cuda"
 tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=False)
 
-# # With adapter
-# relative_path = 'outputs/checkpoint-70' # outputs/Mistral-7B-Instruct-v0.2-arcSFT
-# adapter_path = os.path.abspath(relative_path)
-# print("Absolute path:", adapter_path)
-# model = PeftModel.from_pretrained(model, adapter_path)
+# With adapter
+relative_path = 'outputs/Mistral-7B-Instruct-v0.2-openassistant-guanaco' # outputs/Mistral-7B-Instruct-v0.2-arcSFT 
+adapter_path = os.path.abspath(relative_path)
+print("Absolute path:", adapter_path)
+model = PeftModel.from_pretrained(model, adapter_path)
 model.eval()
 
 # Assuming the files are in the same directory as this script, load in the DS
@@ -67,5 +67,5 @@ def format_dataset(dataset, model, tokenizer):
     return pd.DataFrame(output_data, columns=['prompt', 'response']) # Return as prompt, response
 
 output_df = format_dataset(input_dataset, model, tokenizer)
-output_file_path = os.path.join(script_dir, "Mistral-7B-Instruct-v0.2_Output.jsonl")
+output_file_path = os.path.join(script_dir, "Mistral-7B-Instruct-v0.2-openassistant-guanaco_Output.jsonl")
 output_df.to_json(output_file_path, orient="records", lines=True)

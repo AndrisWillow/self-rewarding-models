@@ -23,6 +23,7 @@ TheBloke/Mistral-7B-Instruct-v0.2-GPTQ
 
 mistralai/Mistral-7B-Instruct-v0.2 (Quanitzed using bitsandbytes)
 0.5435153583617748
+0.6040955631399317 - when there is no new line
 
 Mistral-7B-Instruct-v0.2-arcSFT 1 epoch
 Result: 0.6552901023890785
@@ -60,3 +61,10 @@ TrainingArguments(
     bias="none", 
     task_type="CAUSAL_LM"
 )
+
+outputs/Mistral-7B-Instruct-v0.2-openassistant-guanaco:
+# Generates new lines often as top prediction
+0.29436860068259385
+
+outputs/Mistral-7B-Instruct-v0.2-SFT_baseline
+0.5221843003412969
