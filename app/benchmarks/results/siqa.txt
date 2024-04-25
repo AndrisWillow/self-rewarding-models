@@ -1,0 +1,10 @@
+TheBloke/Mistral-7B-Instruct-v0.2-AWQ
+
+0-shot
+0.5516888433981576
+
+prompt change with instruct param (outputted words randomly however):
+0.5542476970317298
+
+TheBloke/Mistral-7B-v0.1-AWQ:
+Always guessing "1"

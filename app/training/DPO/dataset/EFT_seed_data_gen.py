@@ -86,6 +86,7 @@ systematically attribute points based on the outlined criteria.
         # Subtract input_length from the generated_ids' length to get only new tokens
         new_tokens = generation_output[0, input_length:].tolist()  # Get only the new token ids
         output = tokenizer.decode(new_tokens, skip_special_tokens=True)
+        # TODO include rank
         output_data.append((prompt, output))
         print(f"Processing: {idx+1}/{total_entries}")
     return pd.DataFrame(output_data, columns=['prompt', 'response']) # Return as prompt, response
