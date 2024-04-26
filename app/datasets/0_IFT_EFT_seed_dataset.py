@@ -40,8 +40,8 @@ eft_seed_data.columns = ['question', 'answer', 'rank']
 
 # # Save the datasets to jsonl files
 script_dir = os.path.dirname(os.path.abspath(__file__))
-ift_output_file_path = os.path.join(script_dir, "IFT_seed_data.jsonl")
-eft_output_file_path = os.path.join(script_dir, "EFT_seed_data_input.jsonl")
+ift_output_file_path = os.path.join(script_dir, "0_IFT_seed_data.jsonl")
+eft_output_file_path = os.path.join(script_dir, "0_EFT_seed_data_input.jsonl")
 
 ift_seed_data.to_json(ift_output_file_path, orient="records", lines=True)
 eft_seed_data.to_json(eft_output_file_path, orient="records", lines=True)
