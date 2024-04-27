@@ -21,7 +21,7 @@ tokenizer.pad_token = tokenizer.eos_token
 
 # Assuming the files are in the same directory as this script, load in the DS
 script_dir = os.path.dirname(os.path.abspath(__file__))
-train_file_path = os.path.join(script_dir, "../dataset/IFT_seed_data.jsonl")
+train_file_path = os.path.join(script_dir, "datasets/0_IFT_seed_data.jsonl")
 
 train_ds = Dataset.from_json(train_file_path)
 
@@ -72,5 +72,3 @@ trainer.train()
 
 model.save_pretrained("./outputs/Mistral-7B-Instruct-v0.2-SFT_baseline")
 tokenizer.save_pretrained("./outputs/Mistral-7B-Instruct-v0.2-SFT_baseline")
-
-# TODO Merge the weights?

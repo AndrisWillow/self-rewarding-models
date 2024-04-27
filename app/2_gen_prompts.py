@@ -1,7 +1,7 @@
 # This code will generate new prompts for the model to train on using 8-shot prompting
 # to generate new and unique samples based on the IFT seed data.
 
-# TODO: If you have more v-ram resources, adding batching could considerabily speed up the generation process 
+# TODO: If you have more v-ram resources, adding paralel prompting could considerabily speed up the generation process 
 
 from datasets import Dataset
 import torch
@@ -11,7 +11,7 @@ import pandas as pd
 import re
 import json
 
-def initialize_model_and_tokenizer(model_name_or_path):
+def get_model_and_tokenizer(model_name_or_path):
     """ Initialize and return the model and tokenizer with specific configuration. """
     config = BitsAndBytesConfig(
         load_in_4bit=True,
@@ -24,7 +24,7 @@ def initialize_model_and_tokenizer(model_name_or_path):
     model.eval()
     return model, tokenizer
 
-def load_input_data(file_path):
+def get_df_from_jsonl(file_path):
     """ Load and return the dataset from the provided JSONL file path. """
     input_dataset = Dataset.from_json(file_path)
     return pd.DataFrame(input_dataset)
@@ -76,7 +76,7 @@ def generate_and_save_prompts(input_df, model, tokenizer, sample_to_gen, output_
     sample_count = 0
 
     while sample_count < sample_to_gen:
-        task_prompts = get_random_prompts(input_df)
+        task_prompts = get_random_prompts(input_df, 8)
         prompts = generate_prompt(task_prompts)
         model_inputs = tokenizer(prompts, return_tensors="pt")
         tokens = model_inputs["input_ids"].to("cuda")
@@ -108,8 +108,8 @@ def main():
     output_file_path = os.path.join(script_dir, "datasets/generated_prompts/generated_prompts.jsonl")
 
     model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.2"
-    model, tokenizer = initialize_model_and_tokenizer(model_name_or_path)
-    input_df = load_input_data(input_ds_location)
+    model, tokenizer = get_model_and_tokenizer(model_name_or_path)
+    input_df = get_df_from_jsonl(input_ds_location)
 
     generate_and_save_prompts(input_df, model, tokenizer, 6000, output_file_path)
 
