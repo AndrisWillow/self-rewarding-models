@@ -68,3 +68,6 @@ outputs/Mistral-7B-Instruct-v0.2-openassistant-guanaco:
 
 outputs/Mistral-7B-Instruct-v0.2-SFT_baseline
 0.5221843003412969
+
+outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT
+0.5477815699658704

@@ -19,11 +19,11 @@ device = "cuda"
 tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=False)
 
 # With adapter
-# relative_path = 'outputs/Mistral-7B-Instruct-v0.2-openassistant-guanaco' # outputs/Mistral-7B-Instruct-v0.2-arcSFT
-# adapter_path = os.path.abspath(relative_path)
-# print("Absolute path:", adapter_path)
-# model = PeftModel.from_pretrained(model, adapter_path)
-# model.eval()
+relative_path = 'outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT' # outputs/Mistral-7B-Instruct-v0.2-arcSFT
+adapter_path = os.path.abspath(relative_path)
+print("Absolute path:", adapter_path)
+model = PeftModel.from_pretrained(model, adapter_path)
+model.eval()
 
 # Load dataset
 dataset = load_dataset('ai2_arc', 'ARC-Challenge', split="test")

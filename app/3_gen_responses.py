@@ -57,7 +57,7 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     input_ds_location = os.path.join(script_dir, "datasets/generated_prompts/unique_prompts-1000.jsonl")
     output_file_path = os.path.join(script_dir, "datasets/generated_responses/generated_responses.jsonl")
-    adapter_path = 'outputs/Mistral-7B-Instruct-v0.2-SFT_baseline'
+    adapter_path = 'outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT'
 
     input_ds = Dataset.from_json(input_ds_location)
     
