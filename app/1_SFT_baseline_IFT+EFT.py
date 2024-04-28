@@ -47,17 +47,17 @@ def get_tokenized_ds2(train_file_ds_1, train_file_ds_2, tokenizer):
     combined_dataset = concatenate_datasets([dataset_1, dataset_2])
     
     # output the non tokenized ds
-    output_jsonl_path = 'combined_dataset.jsonl'  # Define the path where the file will be saved
-    combined_dataset.to_json(output_jsonl_path, orient='records', lines=True)
-    print(f"Dataset saved to {output_jsonl_path}")
+    # output_jsonl_path = 'combined_dataset.jsonl'  # Define the path where the file will be saved
+    # combined_dataset.to_json(output_jsonl_path, orient='records', lines=True)
+    # print(f"Dataset saved to {output_jsonl_path}")
 
     # Tokenize the combined dataset
     tokenized_dataset = combined_dataset.map(
         lambda example: tokenizer(example['text'], max_length=max_length, truncation=True, padding="max_length"),
         batched=True
     )
-    output_jsonl_path = 'combined_dataset2.jsonl'  # Define the path where the file will be saved
-    tokenized_dataset.to_json(output_jsonl_path, orient='records', lines=True)
+    # output_jsonl_path = 'combined_dataset2.jsonl'  # Define the path where the file will be saved
+    # tokenized_dataset.to_json(output_jsonl_path, orient='records', lines=True)
     return tokenized_dataset
 
 def get_lora_configured_model(model):
