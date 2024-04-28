@@ -106,7 +106,7 @@ def main():
     model = prepare_model_for_kbit_training(model)
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    output_dir = os.path.join(script_dir, "outputs")
+    output_dir = "outputs"
 
     # TODO: maybe this merge will not be necessary /Temp code
     train_file_ds = os.path.join(script_dir, "datasets/0_IFT_seed_data.jsonl")
