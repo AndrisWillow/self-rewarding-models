@@ -27,6 +27,7 @@ def load_model_with_adapter(base_model, adapter_path):
     return model
 
 def format_prompt(user_question, assitant_answer):
+# TODO: Move the prompt to a sepearte file as it's used in multiple locations
 # Prompt taken from https://arxiv.org/pdf/2401.10020.pdf
         prompt = f'''
 Review the user’s question and the corresponding response using the additive 5-point
@@ -57,7 +58,7 @@ systematically attribute points based on the outlined criteria.
         return prompt
 
 def extract_score_from_text(input_txt):
-    score_match = re.search(r"Score: (\d+)", input_txt)
+    score_match = re.search(r"Score: ([0-5])\b", input_txt)
     if score_match:
         score = int(score_match.group(1))  # This captures the first group, which is the score
     else:
@@ -116,9 +117,9 @@ def generate_output(input_ds, model, tokenizer, completion_sample_to_gen):
     
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    input_ds_location = os.path.join(script_dir, "datasets/generated_responses/generated_responses.jsonl")
-    output_file_path = os.path.join(script_dir, "datasets/generated_scores/generated_scores.jsonl")
-    adapter_path = 'outputs/Mistral-7B-Instruct-v0.2-SFT_baseline'
+    input_ds_location = os.path.join(script_dir, "datasets/generated_responses/generated_responses-0-1000.jsonl")
+    output_file_path = os.path.join(script_dir, "datasets/generated_scores/generated_scores-0-1000.jsonl")
+    adapter_path = 'outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT'
 
     input_ds = Dataset.from_json(input_ds_location)
     

@@ -38,26 +38,13 @@ def get_tokenized_ds2(train_file_ds_1, train_file_ds_2, tokenizer):
 
     # Process dataset_2: merge 'prompt' and 'response' fields into a single 'text' field
     dataset_2 = dataset_2.map(lambda example: {'text': f"{example['prompt']} {example['response']}"})
-
-    # Optionally, remove other fields if dataset_2 contains more fields than 'prompt' and 'response'
-    # This is not strictly necessary if the map function only returns the new 'text' field
-    dataset_2 = dataset_2.remove_columns([col for col in dataset_2.column_names if col not in ['text']])
-
-    # Append dataset_1 to dataset_2
     combined_dataset = concatenate_datasets([dataset_1, dataset_2])
-    
-    # output the non tokenized ds
-    # output_jsonl_path = 'combined_dataset.jsonl'  # Define the path where the file will be saved
-    # combined_dataset.to_json(output_jsonl_path, orient='records', lines=True)
-    # print(f"Dataset saved to {output_jsonl_path}")
 
     # Tokenize the combined dataset
     tokenized_dataset = combined_dataset.map(
         lambda example: tokenizer(example['text'], max_length=max_length, truncation=True, padding="max_length"),
         batched=True
     )
-    # output_jsonl_path = 'combined_dataset2.jsonl'  # Define the path where the file will be saved
-    # tokenized_dataset.to_json(output_jsonl_path, orient='records', lines=True)
     return tokenized_dataset
 
 def get_lora_configured_model(model):

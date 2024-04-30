@@ -41,7 +41,7 @@ def generate_and_save_prompts(input_ds, model, tokenizer, comepletion_sample_to_
                 do_sample=True, 
                 temperature=0.7, # Temperature and top_p taken from self-rewarding paper
                 top_p=0.9, # also taken from the paper
-                max_new_tokens=115, # Max tokens for output generation
+                max_new_tokens=255, # Max tokens for output generation
                 pad_token_id=tokenizer.eos_token_id
             )
             # Decode only the newly generated tokens
@@ -50,13 +50,12 @@ def generate_and_save_prompts(input_ds, model, tokenizer, comepletion_sample_to_
             output_data.append((prompt_id, prompt, output))
             # Extract score 
         print(f"Processing: {prompt_id}/{ds_row_count}")
-        if idx == 3: break
     return pd.DataFrame(output_data, columns=['prompt_id', 'prompt', 'response'])
     
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    input_ds_location = os.path.join(script_dir, "datasets/generated_prompts/unique_prompts-1000.jsonl")
-    output_file_path = os.path.join(script_dir, "datasets/generated_responses/generated_responses.jsonl")
+    input_ds_location = os.path.join(script_dir, "datasets/generated_prompts/unique_prompts-0-1000.jsonl")
+    output_file_path = os.path.join(script_dir, "datasets/generated_responses/generated_responses-0-1000.jsonl")
     adapter_path = 'outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT'
 
     input_ds = Dataset.from_json(input_ds_location)
@@ -67,7 +66,8 @@ def main():
     model = load_model_with_adapter(model, adapter_path)
     model.eval() # TODO: What does this specifically do?
 
-    output_df = generate_and_save_prompts(input_ds, model, tokenaizer, 4)
+    samples_to_gen = 4
+    output_df = generate_and_save_prompts(input_ds, model, tokenaizer, samples_to_gen)
     output_df.to_json(output_file_path, orient="records", lines=True)
 
 if __name__ == "__main__":
