@@ -6,9 +6,15 @@ import os
 import pandas as pd
 import re
 import math
+import json
 
 # This code generates scoring for all the candidate responses 3 times to account for variance and averages them
 # Then outputs a new dataset with the scoring
+
+# This code is made with redundancy, so it's safe to stop the generation and resume it any point
+# This was done because the sample generations takes a really long time
+
+# TODO: Add more scalable batching if needed
 
 def initialize_model_and_tokenizer(model_name_or_path):
     """ Initialize and return the model and tokenizer with specific configuration. """
@@ -26,8 +32,8 @@ def load_model_with_adapter(base_model, adapter_path):
     model = PeftModel.from_pretrained(base_model, adapter_path)
     return model
 
+# TODO: move the prompt out to seperate file because it's used in multiple files
 def format_prompt(user_question, assitant_answer):
-# TODO: Move the prompt to a sepearte file as it's used in multiple locations
 # Prompt taken from https://arxiv.org/pdf/2401.10020.pdf
         prompt = f'''
 Review the user’s question and the corresponding response using the additive 5-point
@@ -58,29 +64,12 @@ systematically attribute points based on the outlined criteria.
         return prompt
 
 def extract_score_from_text(input_txt):
-    score_match = re.search(r"Score: ([0-5])\b", input_txt)
+    score_match = re.search(r"Score: (\d+)", input_txt)
     if score_match:
         score = int(score_match.group(1))  # This captures the first group, which is the score
     else:
         score = -1  # Handle cases where no score is found in generation
     return score
-
-def model_generate_samples(model, tokenizer, prompt, prompt_input_length, num_samples):
-    """  """
-    output = []
-    for _ in range(num_samples):
-        generation_output = model.generate(
-            prompt,
-            do_sample=True,
-            temperature=0.7,
-            top_p=0.9,
-            max_new_tokens=115,
-            pad_token_id=tokenizer.eos_token_id
-        )
-        new_tokens = generation_output[0, prompt_input_length:].tolist()
-        response = tokenizer.decode(new_tokens, skip_special_tokens=True)
-        output.append(response)
-    return output
 
 def get_avg_score(output_samples):
     """ Calculates and gets an average score (rounded down) from the list of model outputs """
@@ -92,34 +81,66 @@ def get_avg_score(output_samples):
             score_found += 1
     return math.floor(total_score / score_found) if score_found != 0 else -1
 
-def generate_output(input_ds, model, tokenizer, completion_sample_to_gen):
-    output_data = []
-    for idx, row in enumerate(input_ds):
-        prompt = format_prompt(row["prompt"], row["response"])
-        model_inputs = tokenizer(prompt, return_tensors="pt")
-        tokens = model_inputs["input_ids"].to("cuda")
-        prompt_input_length = tokens.shape[1]
+def get_line_count_in_file(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            return sum(1 for _ in file)
+    except FileNotFoundError:
+        return 0
 
-        output_samples = model_generate_samples(model, tokenizer, tokens, prompt_input_length, completion_sample_to_gen)
-        avg_score = get_avg_score(output_samples)
+def model_generate_samples_batched(model, tokenizer, prompt_text, num_samples):
+    """Generates multiple samples for the same prompt in a batched manner."""
+    prompts = [prompt_text] * num_samples  # Repeat the same prompt to fill the batch
+    model_inputs = tokenizer(prompts, return_tensors="pt")
+    input_ids = model_inputs["input_ids"].to("cuda")
+    output = []
 
-        output_data.append({
-            "prompt_id": row["prompt_id"],
-            "prompt": row["prompt"],
-            "response": row["response"],
-            "avg_score": avg_score,
-            "meta_data": output_samples # Including all the model outputs for now for evaluation # TODO: Remove meta_data
-        })
+    generation_output = model.generate(
+        input_ids,
+        do_sample=True,
+        temperature=0.7,
+        top_p=0.9,
+        max_new_tokens=115,
+        pad_token_id=tokenizer.eos_token_id,
+        num_return_sequences=num_samples  # Ensure we generate the requested number of samples
+    )
+    responses = tokenizer.batch_decode(generation_output, skip_special_tokens=True)
+    
+    for out in responses:
+        # Get only the completion part
+        completion = out[len(prompt_text):].strip()
+        output.append((completion))
 
-        print(f"Processing: {idx+1}/{len(input_ds)}")
+    return output
 
-    return pd.DataFrame(output_data)
+def generate_output(input_ds, model, tokenizer, completion_sample_to_gen, output_file_path):
+    with open(output_file_path, "a") as file:
+        start_id = get_line_count_in_file(output_file_path) # We have an exact corespondance of line counts in both files
+        for idx, _ in enumerate(input_ds, start=start_id):
+            print(f"Processing: {idx+1}/{len(input_ds)}")
+
+            prompt_id = input_ds[idx]["prompt_id"]
+            prompt = input_ds[idx]["prompt"]
+            response = input_ds[idx]["response"]
+
+            full_prompt = format_prompt(prompt, response)
+            output_samples = model_generate_samples_batched(model, tokenizer, full_prompt, completion_sample_to_gen)
+            avg_score = get_avg_score(output_samples)
+
+            result = json.dumps({
+                "prompt_id": prompt_id,
+                "prompt": prompt,
+                "response": response,
+                "avg_score": avg_score,
+                "meta_data": output_samples
+            })
+            file.write(result + '\n')
     
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    input_ds_location = os.path.join(script_dir, "datasets/generated_responses/generated_responses-0-1000.jsonl")
-    output_file_path = os.path.join(script_dir, "datasets/generated_scores/generated_scores-0-1000.jsonl")
-    adapter_path = 'outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT'
+    input_ds_location = os.path.join(script_dir, "datasets/generated_responses/generated_responses-2000-3000.jsonl")
+    output_file_path = os.path.join(script_dir, "datasets/generated_scores/generated_scores-2000-3000.jsonl")
+    adapter_path = os.path.join(script_dir, '../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT')
 
     input_ds = Dataset.from_json(input_ds_location)
     
@@ -127,11 +148,10 @@ def main():
     model, tokenaizer = initialize_model_and_tokenizer(model_name_or_path)
 
     model = load_model_with_adapter(model, adapter_path)
-    model.eval() # TODO: What does this specifically do?
+    model.eval()
 
     samples_to_gen = 3
-    output_df = generate_output(input_ds, model, tokenaizer, samples_to_gen)
-    output_df.to_json(output_file_path, orient="records", lines=True)
+    generate_output(input_ds, model, tokenaizer, samples_to_gen, output_file_path)
 
 if __name__ == "__main__":
     main()

@@ -17,7 +17,8 @@ def format_dataset(input_ds_location):
         highest = group.loc[group['avg_score'].idxmax()]
         lowest = group.loc[group['avg_score'].idxmin()]
 
-        if highest['avg_score'] != lowest['avg_score']:  # Ensure they do not have the same score
+        # We disregard all candidates if all of their scores are the same
+        if highest['avg_score'] != lowest['avg_score']:  
             preference_pairs.append({
                 'prompt': highest['prompt'],
                 'chosen': highest['response'],
@@ -26,7 +27,6 @@ def format_dataset(input_ds_location):
                 'score_accepted': highest['avg_score']
             })
 
-    # Convert list of dicts to DataFrame
     return pd.DataFrame(preference_pairs)
 
 def main():

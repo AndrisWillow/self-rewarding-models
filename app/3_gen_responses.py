@@ -4,11 +4,16 @@ from peft import PeftModel
 from datasets import Dataset
 import os
 import pandas as pd
+import json
 
-# TODO: Generate 4 candidate responses for each prompt (~ 3000 * 4 = 12000)
+# This code generates candidate responses(equal to completion_sample_to_gen) to the unique prompts and then saves them
+
+# This code is made with redundancy, so it's safe to stop the generation and resume it any point
+# This was done because the sample generations takes a really long time
+
+# TODO: Add more scalable batching if needed
 
 def initialize_model_and_tokenizer(model_name_or_path):
-    """ Initialize and return the model and tokenizer with specific configuration. """
     config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
@@ -23,52 +28,64 @@ def load_model_with_adapter(base_model, adapter_path):
     model = PeftModel.from_pretrained(base_model, adapter_path)
     return model
 
-def generate_and_save_prompts(input_ds, model, tokenizer, comepletion_sample_to_gen):
-    """ Generates prompts """
-    ds_row_count = len(input_ds)
-    output_data = []
-    for idx, row in enumerate(input_ds):
-        prompt_id = idx+1 # Adding a prompt id to later group by
-        question = row["prompt"]
-        prompt = f'''User: {question} Assistant: '''
-        model_inputs = tokenizer(prompt, return_tensors="pt")
-        tokens = model_inputs["input_ids"].to("cuda")
-        input_length = tokens.shape[1] # taking not of input length to only output the model generation
+def find_last_prompt_id(file_path):
+    try:
+        with open(file_path, "r") as file:
+            lines = file.readlines()
+            last_line = lines[-1]
+            last_prompt_id = json.loads(last_line)['prompt_id']
+            return last_prompt_id
+    except (FileNotFoundError, IndexError): # File was not present
+        return 0
+# TODO: split up this function
+def generate_and_save_prompts_batched(input_ds, model, tokenizer, completion_sample_to_gen, output_file_path):
+    start_id = find_last_prompt_id(output_file_path)
+    ds_rows_to_process = len(input_ds)
 
-        for _ in range(comepletion_sample_to_gen):
+    with open(output_file_path, "a") as file:
+        for idx, row in enumerate(input_ds, start=start_id):
+            prompt_id = idx + 1 # Adding a prompt id to later group by
+            print(f"Processing: {prompt_id}/{ds_rows_to_process}")
+            
+            question = input_ds[idx]["prompt"]  # TODO: fix out of bounds error, doesn't affect result
+            prompt = f"User: {question} Assistant: "
+            prompts = [prompt] * completion_sample_to_gen
+
+            model_inputs = tokenizer(prompts, return_tensors="pt")
+            tokens = model_inputs["input_ids"].to("cuda")
+
             generation_output = model.generate(
                 tokens,
-                do_sample=True, 
+                do_sample=True,
                 temperature=0.7, # Temperature and top_p taken from self-rewarding paper
                 top_p=0.9, # also taken from the paper
-                max_new_tokens=255, # Max tokens for output generation
+                max_new_tokens=255,
                 pad_token_id=tokenizer.eos_token_id
             )
-            # Decode only the newly generated tokens
-            new_tokens = generation_output[0, input_length:].tolist()
-            output = tokenizer.decode(new_tokens, skip_special_tokens=True) 
-            output_data.append((prompt_id, prompt, output))
-            # Extract score 
-        print(f"Processing: {prompt_id}/{ds_row_count}")
-    return pd.DataFrame(output_data, columns=['prompt_id', 'prompt', 'response'])
-    
+            completions = tokenizer.batch_decode(generation_output, skip_special_tokens=True)
+            for completion in completions:
+                result = json.dumps({
+                    'prompt_id': prompt_id, 
+                    'prompt': prompt, 
+                    'response': completion[len(prompt):].strip() # Extracting only the generated completion
+                })
+                file.write(result + "\n")
+
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    input_ds_location = os.path.join(script_dir, "datasets/generated_prompts/unique_prompts-0-1000.jsonl")
-    output_file_path = os.path.join(script_dir, "datasets/generated_responses/generated_responses-0-1000.jsonl")
-    adapter_path = 'outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT'
+    input_ds_location = os.path.join(script_dir, "datasets/generated_prompts/unique_prompts.jsonl")
+    output_file_path = os.path.join(script_dir, "datasets/generated_responses/generated_responses.jsonl")
+    adapter_path = os.path.join(script_dir, '../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT')
 
     input_ds = Dataset.from_json(input_ds_location)
-    
     model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.2"
-    model, tokenaizer = initialize_model_and_tokenizer(model_name_or_path)
+    model, tokenizer = initialize_model_and_tokenizer(model_name_or_path)
 
     model = load_model_with_adapter(model, adapter_path)
-    model.eval() # TODO: What does this specifically do?
+    model.eval()  # Sets the model to evaluation mode, affecting layers like dropout
+    completion_sample_to_gen = 4
 
-    samples_to_gen = 4
-    output_df = generate_and_save_prompts(input_ds, model, tokenaizer, samples_to_gen)
-    output_df.to_json(output_file_path, orient="records", lines=True)
+    generate_and_save_prompts_batched(input_ds, model, tokenizer, completion_sample_to_gen, output_file_path)
 
 if __name__ == "__main__":
     main()

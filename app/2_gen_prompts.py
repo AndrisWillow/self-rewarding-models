@@ -1,7 +1,7 @@
 # This code will generate new prompts for the model to train on using 8-shot prompting
 # to generate new and unique samples based on the IFT seed data.
 
-# TODO: If you have more v-ram resources, adding paralel prompting could considerabily speed up the generation process 
+# TODO: If you have more v-ram resources, adding batched prompting could considerabily speed up the generation process 
 
 from datasets import Dataset
 import torch
@@ -36,7 +36,6 @@ def generate_prompt(examples):
 Come up with a series of tasks and questions. Only the task/question,
 no further text/explanation, no additional information.
 The task or question should be something a person would ask a chatbot.
-
 """
     for _, item in enumerate(examples):
         prompt += f"<task>{item}</task>\n"
@@ -62,9 +61,7 @@ def filter_new_tasks(new_tasks, seen_prompts):
 
 # Because the prompt generation takes a very long time, after each iteration the prompts are written to the file, so it's safe to exit
 def append_prompts_to_file(file_path, tasks):
-    """
-    Appends filtered tasks to a JSONL file.
-    """
+    """ Appends filtered tasks to a JSONL file. """
     with open(file_path, 'a') as file:
         for task in tasks:
             file.write(json.dumps({'prompt': task}) + '\n')
