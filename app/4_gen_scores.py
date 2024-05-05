@@ -64,7 +64,7 @@ systematically attribute points based on the outlined criteria.
         return prompt
 
 def extract_score_from_text(input_txt):
-    score_match = re.search(r"Score: (\d+)", input_txt)
+    score_match = re.search(r"Score: ([0-5])\b", input_txt)
     if score_match:
         score = int(score_match.group(1))  # This captures the first group, which is the score
     else:
