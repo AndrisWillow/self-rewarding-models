@@ -13,10 +13,10 @@ from trl import DPOTrainer
 import os
 
 # TODO: make this more readable, explain the code
-
+script_dir = os.path.dirname(os.path.abspath(__file__))
+model_name = os.path.join(script_dir, '../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT')
 base_model_name = "mistralai/Mistral-7B-Instruct-v0.2"
-model_name = "outputs/Mistral-7B-Instruct-v0.2-SFT_baseline"
-dataset_file = "app/datasets/preference_pairs/preference_pairs.jsonl"
+dataset_file = "datasets/preference_pairs/preference_pairs.jsonl"
 output_dir = "outputs"
 
 # load the training dataset
