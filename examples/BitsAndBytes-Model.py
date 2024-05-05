@@ -18,7 +18,7 @@ device = "cuda:0"
 tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=False)
 
 # With adapter
-relative_path = 'outputs/Mistral-7B-Instruct-v0.2-SFT_baseline'
+relative_path = '../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT'
 adapter_path = os.path.abspath(relative_path)
 print("Absolute path:", adapter_path)
 model = PeftModel.from_pretrained(model, adapter_path)

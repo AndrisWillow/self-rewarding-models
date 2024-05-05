@@ -31,8 +31,8 @@ def format_dataset(input_ds_location):
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    input_ds_location = os.path.join(script_dir, "datasets/generated_scores/generated_scores-0-1000.jsonl")
-    output_file_path = os.path.join(script_dir, "datasets/preference_pairs/preference_pairs.jsonl")
+    input_ds_location = os.path.join(script_dir, "datasets/generated_scores/generated_scores-3001-6042.jsonl")
+    output_file_path = os.path.join(script_dir, "datasets/preference_pairs/preference_pairs-3001-6042.jsonl")
     
     output_df = format_dataset(input_ds_location)
     output_df.to_json(output_file_path, orient="records", lines=True)

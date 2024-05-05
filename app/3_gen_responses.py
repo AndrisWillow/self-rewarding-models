@@ -76,15 +76,14 @@ def main():
     input_ds_location = os.path.join(script_dir, "datasets/generated_prompts/unique_prompts.jsonl")
     output_file_path = os.path.join(script_dir, "datasets/generated_responses/generated_responses.jsonl")
     adapter_path = os.path.join(script_dir, '../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT')
-
     input_ds = Dataset.from_json(input_ds_location)
+
     model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.2"
     model, tokenizer = initialize_model_and_tokenizer(model_name_or_path)
-
     model = load_model_with_adapter(model, adapter_path)
     model.eval()  # Sets the model to evaluation mode, affecting layers like dropout
-    completion_sample_to_gen = 4
 
+    completion_sample_to_gen = 4
     generate_and_save_prompts_batched(input_ds, model, tokenizer, completion_sample_to_gen, output_file_path)
 
 if __name__ == "__main__":

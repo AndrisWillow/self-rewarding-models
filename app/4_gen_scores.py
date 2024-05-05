@@ -27,7 +27,7 @@ def initialize_model_and_tokenizer(model_name_or_path):
     model = AutoModelForCausalLM.from_pretrained(model_name_or_path, quantization_config=config)
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=False)
     return model, tokenizer
-
+ 
 def load_model_with_adapter(base_model, adapter_path):
     model = PeftModel.from_pretrained(base_model, adapter_path)
     return model
@@ -119,7 +119,7 @@ def generate_output(input_ds, model, tokenizer, completion_sample_to_gen, output
         for idx, _ in enumerate(input_ds, start=start_id):
             print(f"Processing: {idx+1}/{len(input_ds)}")
 
-            prompt_id = input_ds[idx]["prompt_id"]
+            prompt_id = input_ds[idx]["prompt_id"] # TODO fix out of bounds error
             prompt = input_ds[idx]["prompt"]
             response = input_ds[idx]["response"]
 
@@ -138,8 +138,8 @@ def generate_output(input_ds, model, tokenizer, completion_sample_to_gen, output
     
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    input_ds_location = os.path.join(script_dir, "datasets/generated_responses/generated_responses-2000-3000.jsonl")
-    output_file_path = os.path.join(script_dir, "datasets/generated_scores/generated_scores-2000-3000.jsonl")
+    input_ds_location = os.path.join(script_dir, "datasets/generated_responses/generated_responses-0-1000.jsonl")
+    output_file_path = os.path.join(script_dir, "datasets/generated_scores/generated_scores-0-1000.jsonl")
     adapter_path = os.path.join(script_dir, '../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT')
 
     input_ds = Dataset.from_json(input_ds_location)
