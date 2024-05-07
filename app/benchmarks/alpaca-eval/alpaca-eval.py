@@ -32,7 +32,7 @@ def get_line_count_in_file(file_path):
 def model_generate_and_save(eval_set, model, tokenizer, output_file_path):
     with open(output_file_path, "a") as file:
         start_id = get_line_count_in_file(output_file_path) # We have an exact corespondance of line counts in both files
-        for idx, data in enumerate(eval_set, start=start_id):
+        for idx, data in enumerate(eval_set, start=start_id): # TODO fix that when restarting the generation it starts from the begining
             print(f"Processing: {idx+1}/{len(eval_set)}")
             instruction = data["instruction"]
             model_inputs = tokenizer(instruction, return_tensors="pt")
