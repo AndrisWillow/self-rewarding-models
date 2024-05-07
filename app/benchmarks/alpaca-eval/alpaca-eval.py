@@ -29,11 +29,19 @@ def get_line_count_in_file(file_path):
     except FileNotFoundError:
         return 0
 
-def model_generate_and_save(eval_set, model, tokenizer, output_file_path):
+def model_generate_and_save(dataset, model, tokenizer, output_file_path):
+    ds_length = len(dataset)
+    start_id = get_line_count_in_file(output_file_path)
+
+    if start_id >= ds_length:
+        print("No new data to process.")
+        return
+
+    dataset = dataset.select(range(start_id, ds_length))
+
     with open(output_file_path, "a") as file:
-        start_id = get_line_count_in_file(output_file_path) # We have an exact corespondance of line counts in both files
-        for idx, data in enumerate(eval_set, start=start_id): # TODO fix that when restarting the generation it starts from the begining
-            print(f"Processing: {idx+1}/{len(eval_set)}")
+        for idx, data in enumerate(dataset, start=start_id):
+            print(f"Processing: {idx+1}/{ds_length}")
             instruction = data["instruction"]
             model_inputs = tokenizer(instruction, return_tensors="pt")
             input_ids = model_inputs["input_ids"].to("cuda")

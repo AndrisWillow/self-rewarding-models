@@ -18,45 +18,55 @@ device = "cuda:0"
 tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=False)
 
 # With adapter
-relative_path = '../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT'
-adapter_path = os.path.abspath(relative_path)
-print("Absolute path:", adapter_path)
-model = PeftModel.from_pretrained(model, adapter_path)
+# relative_path = 'outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT'
+# adapter_path = os.path.abspath(relative_path)
+# print("Absolute path:", adapter_path)
+# model = PeftModel.from_pretrained(model, adapter_path)
 model.eval()
 
-user_question = "I am using docker compose and i need to mount the docker socket - how would i do that?"
+system_prompt =  """You are a helpful AI assitant that gives helpful, detailed, and polite answers to the user's questions. Answer the following user question only: """
 
-prompt = (
-    "A chat between a curious human and an artificial intelligence assistant. "
-    "The assistant gives helpful, detailed, and polite answers to the user's questions. "
-    "Human: I am using docker compose and i need to mount the docker socket - how would i do that?"
-    "Assistant: "
+prompts = (
+    f"""{system_prompt}
+    Human: I am using docker compose and i need to mount the docker socket - how would i do that?"
+    Assistant: ,
+    """,
+    f"""{system_prompt}
+    Human: How to make a simple game in Python?
+    Assistant: 
+    """,
+    f"""{system_prompt}
+    Human: Can you help me write a CV?
+    Assistant: 
+    """,
+    f"""{system_prompt}
+    Human: What is the boiling point of water in Celsius?
+    Assistant: 
+    """,
+    f"""{system_prompt}
+    Human: Play me a song
+    Assistant: 
+    """,
 )
+for prompt in prompts:
+    model_inputs = tokenizer(prompt, return_tensors="pt")
+    tokens = model_inputs["input_ids"].to(device)
+        # Note the length of the input
+    input_length = tokens.shape[1]
+    generation_output = model.generate(
+        tokens,
+        # do_sample=True, # Picks tokens from the prob. distribution for more creative responses
+        # temperature=1, # randomness in sampling (higher temp, more creative, but more random, lower, more predictable), effects logits
+        # top_p=1, # Limits the set of posible next tokens. Does so by cumulatively selecting the most probable tokens from a prob. distribution until it reaches the limit
+        # top_k=1,   # Limits the options to the {top_k} most likely options
+        max_new_tokens = 250,
+        # top_p = 0.9,
+        # temperature=0.7,
+        # do_sample=True,
+        pad_token_id=tokenizer.eos_token_id
+    )
+    new_tokens = generation_output[0, input_length:].tolist()  # Get only the new token ids
+    # output = tokenizer.decode(generation_output[0])
+    output = tokenizer.decode(new_tokens, skip_special_tokens=True)
 
-model_inputs = tokenizer(prompt, return_tensors="pt")
-
-tokens = model_inputs["input_ids"].to(device)
-
-    # Note the length of the input
-input_length = tokens.shape[1]
-
-generation_output = model.generate(
-    tokens,
-    # do_sample=True, # Picks tokens from the prob. distribution for more creative responses
-    # temperature=1, # randomness in sampling (higher temp, more creative, but more random, lower, more predictable), effects logits
-    # top_p=1, # Limits the set of posible next tokens. Does so by cumulatively selecting the most probable tokens from a prob. distribution until it reaches the limit
-    # top_k=1,   # Limits the options to the {top_k} most likely options
-    max_new_tokens = 250,
-    # top_p = 0.9,
-    # temperature=0.7,
-    # do_sample=True,
-    pad_token_id=tokenizer.eos_token_id
-)
-# Decode only the newly generated tokens, ignoring the input part
-# Subtract input_length from the generated_ids' length to get only new tokens
-# print(input_length)
-new_tokens = generation_output[0, input_length:].tolist()  # Get only the new token ids
-# output = tokenizer.decode(generation_output[0])
-output = tokenizer.decode(new_tokens, skip_special_tokens=True)
-
-print(f'\n {output}')
+    print(f'\n {output}')

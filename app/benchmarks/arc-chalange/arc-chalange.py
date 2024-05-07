@@ -1,6 +1,6 @@
 from datasets import load_dataset
 import torch
-from transformers import BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer
+from transformers import BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer, DataCollatorWithPadding
 import os
 from peft import PeftModel
 import re
@@ -34,15 +34,34 @@ Question: {question} Possible answers: {choices_formatted}. Output only the corr
 def model_generate_output_batched(model, tokenizer, prompts):
     tokenizer.pad_token = tokenizer.eos_token
     model_inputs = tokenizer(prompts, return_tensors="pt", padding=True)
+
     tokens = model_inputs["input_ids"].to(model.device)
-    
+    attention_mask = model_inputs["attention_mask"].to(model.device)
+
+    print("tokens shape:", tokens.shape)  # Debug print
+    print("attention_mask shape:", attention_mask.shape)  # Debug print
+
+    print("Tokens before padding:")
+    for idx, token_ids in enumerate(tokens):
+        print(f"Input {idx + 1} - Input IDs:", token_ids)
+        print(f"Input {idx + 1} - Attention Mask:", attention_mask[idx])
+        print("Decoded input:", tokenizer.decode(token_ids, skip_special_tokens=True))
+        print()  # Add an empty line for readability
+
     generation_output = model.generate(
         tokens,
         max_new_tokens=1,
         pad_token_id=tokenizer.pad_token_id,
     )
+
+    print("Generated tokens:")
+    for token_ids in generation_output:
+        print(tokenizer.decode(token_ids, skip_special_tokens=True))
     output = tokenizer.batch_decode(generation_output[:, tokens.shape[1]:], skip_special_tokens=True)
+    print("Output")
+    print(output)
     return output
+
 
 def eval_benchmark(model, tokenizer, dataset, model_name_or_path, adapter="None", batch_size=10):
     score = 0
@@ -66,7 +85,7 @@ def eval_benchmark(model, tokenizer, dataset, model_name_or_path, adapter="None"
             if output == answer_key: 
                 score += 1 
             else:
-                failed_generations += 1
+                failed_generations += 1 # TODO mark it as a failed generation if output is not one of the possible answers (A,B,C,D,1,2,3,4)
         print(f"Processed batch ending at index {batch_end}, current score: {score}")
 
     # Calculating result and writing to JSON
@@ -89,15 +108,15 @@ def eval_benchmark(model, tokenizer, dataset, model_name_or_path, adapter="None"
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     adapter_path = "None" # TODO add shell params
-    adapter_path = os.path.join(script_dir, '../../../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline-DPO-M1')
+    # adapter_path = os.path.join(script_dir, '../../../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline-DPO-M1')
     model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.2"
     dataset = load_dataset('ai2_arc', 'ARC-Challenge', split="test")
 
     model, tokenizer = get_model_and_tokenizer(model_name_or_path)
-    model = load_model_with_adapter(model, adapter_path)
+    # model = load_model_with_adapter(model, adapter_path)
     model.eval()
 
-    eval_benchmark(model, tokenizer, dataset, model_name_or_path, adapter_path, batch_size=1)
+    eval_benchmark(model, tokenizer, dataset, model_name_or_path, adapter_path, batch_size=5)
 
 if __name__ == "__main__":
     main()
