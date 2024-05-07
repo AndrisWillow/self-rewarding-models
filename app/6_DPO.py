@@ -12,7 +12,7 @@ from peft import (
 from trl import DPOTrainer
 import os
 
-# TODO: make this more readable, explain the code
+# TODO: Refactor this code into more readable functions
 script_dir = os.path.dirname(os.path.abspath(__file__))
 model_name = os.path.join(script_dir, '../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT')
 base_model_name = "mistralai/Mistral-7B-Instruct-v0.2"
