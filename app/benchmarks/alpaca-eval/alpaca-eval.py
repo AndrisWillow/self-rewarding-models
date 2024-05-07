@@ -29,6 +29,16 @@ def get_line_count_in_file(file_path):
     except FileNotFoundError:
         return 0
 
+def convert_jsonl_to_json(jsonl_filename, json_filename):
+    data = []
+    with open(jsonl_filename, 'r') as file:
+        for line in file:
+            json_record = json.loads(line.strip())
+            data.append(json_record)
+    
+    with open(json_filename, 'w') as json_file:
+        json.dump(data, json_file, indent=4)
+
 def model_generate_and_save(dataset, model, tokenizer, output_file_path):
     ds_length = len(dataset)
     start_id = get_line_count_in_file(output_file_path)
@@ -75,13 +85,17 @@ def main():
     base_model.eval()
     output_file_path = os.path.join(script_dir, 'reference_model_outputs.jsonl')
     model_generate_and_save(eval_set, base_model, tokenizer, output_file_path)
-
+    # Alpaca Eval expects a json file
+    json_file = 'reference_model_outputs.json'
+    convert_jsonl_to_json(output_file_path, json_file)
 
     # Gen output for trained model
     trained_model = load_model_with_adapter(base_model, adapter_path)
     trained_model.eval()
     output_file_path = os.path.join(script_dir, 'model_outputs.jsonl')
     model_generate_and_save(eval_set, trained_model, tokenizer, output_file_path)
+    json_file = 'model_outputs.json'
+    convert_jsonl_to_json(output_file_path, json_file)
 
 if __name__ == "__main__":
     main()
