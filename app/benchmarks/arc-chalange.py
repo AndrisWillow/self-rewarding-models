@@ -11,7 +11,7 @@ device = "cuda"
 dataset = load_dataset('ai2_arc', 'ARC-Challenge', split="test")
 # Load model
 model_name_or_path = "TheBloke/Mistral-7B-Instruct-v0.2-AWQ" #TheBloke/Mistral-7B-Instruct-v0.2-AWQ #TheBloke/Mistral-7B-v0.1-AWQ
-model = AutoAWQForCausalLM.from_quantized(model_name_or_path, fuse_layers=True,
+model = AutoAWQForCausalLM.from_quantized(model_name_or_path, fuse_layers=True, # Fusing layers gives the inference speed boost?
                                           trust_remote_code=False, safetensors=True)
 # Load tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=False)
@@ -25,8 +25,7 @@ for row in dataset:
     choices_formatted = " ".join([f"{label}: {text}" for label, text in zip(row['choices']['label'], row['choices']['text'])])
 
     prompt=f'''Answer this multiple choice question. 
-    Question: {question} Posible answers: {choices_formatted} Output only the corresponding letter to the correct answer. Answer:
-    '''
+    Question: {question} Posible answers: {choices_formatted} Output only the corresponding letter to the correct answer. Answer: '''
 
     model_inputs = tokenizer(prompt, return_tensors="pt")
 

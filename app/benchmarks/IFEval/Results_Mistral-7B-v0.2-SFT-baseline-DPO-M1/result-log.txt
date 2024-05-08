@@ -1,0 +1,86 @@
+I0507 19:47:10.206828 140477658882048 evaluation_main.py:259] Generating eval_results_strict...
+I0507 19:47:10.698531 140477658882048 evaluation_main.py:265] Accuracy: 0.401109
+I0507 19:47:10.705622 140477658882048 evaluation_main.py:271] Generated: ./instruction_following_eval/data/eval_results_strict.jsonl
+================================================================
+./instruction_following_eval/data/eval_results_strict.jsonl Accuracy Scores:
+prompt-level: 0.4011090573012939
+instruction-level: 0.526378896882494
+
+change_case 0.43820224719101125
+combination 0.13846153846153847
+detectable_content 0.8867924528301887
+detectable_format 0.6751592356687898
+keywords 0.7300613496932515
+language 0.5483870967741935
+length_constraints 0.38461538461538464
+punctuation 0.13636363636363635
+startend 0.5671641791044776
+
+change_case:capital_word_frequency 0.76
+change_case:english_capital 0.16
+change_case:english_lowercase 0.41025641025641024
+combination:repeat_prompt 0.04878048780487805
+combination:two_responses 0.2916666666666667
+detectable_content:number_placeholders 0.7777777777777778
+detectable_content:postscript 1.0
+detectable_format:constrained_response 0.8
+detectable_format:json_format 0.29411764705882354
+detectable_format:multiple_sections 0.7142857142857143
+detectable_format:number_bullet_lists 0.16129032258064516
+detectable_format:number_highlighted_sections 0.8958333333333334
+detectable_format:title 0.9459459459459459
+keywords:existence 0.8461538461538461
+keywords:forbidden_words 0.673469387755102
+keywords:frequency 0.7619047619047619
+keywords:letter_frequency 0.6363636363636364
+language:response_language 0.5483870967741935
+length_constraints:nth_paragraph_first_word 0.0
+length_constraints:number_paragraphs 0.07407407407407407
+length_constraints:number_sentences 0.46153846153846156
+length_constraints:number_words 0.5576923076923077
+punctuation:no_comma 0.13636363636363635
+startend:end_checker 0.6923076923076923
+startend:quotation 0.4878048780487805
+I0507 19:47:10.706469 140477658882048 evaluation_main.py:259] Generating eval_results_loose...
+I0507 19:47:11.496669 140477658882048 evaluation_main.py:265] Accuracy: 0.449168
+I0507 19:47:11.503378 140477658882048 evaluation_main.py:271] Generated: ./instruction_following_eval/data/eval_results_loose.jsonl
+================================================================
+./instruction_following_eval/data/eval_results_loose.jsonl Accuracy Scores:
+prompt-level: 0.4491682070240296
+instruction-level: 0.5755395683453237
+
+change_case 0.4943820224719101
+combination 0.15384615384615385
+detectable_content 0.8867924528301887
+detectable_format 0.7515923566878981
+keywords 0.754601226993865
+language 0.5806451612903226
+length_constraints 0.44755244755244755
+punctuation 0.21212121212121213
+startend 0.6268656716417911
+
+change_case:capital_word_frequency 0.8
+change_case:english_capital 0.28
+change_case:english_lowercase 0.4358974358974359
+combination:repeat_prompt 0.04878048780487805
+combination:two_responses 0.3333333333333333
+detectable_content:number_placeholders 0.7777777777777778
+detectable_content:postscript 1.0
+detectable_format:constrained_response 0.8
+detectable_format:json_format 0.7058823529411765
+detectable_format:multiple_sections 0.7142857142857143
+detectable_format:number_bullet_lists 0.3225806451612903
+detectable_format:number_highlighted_sections 0.8958333333333334
+detectable_format:title 0.9459459459459459
+keywords:existence 0.8461538461538461
+keywords:forbidden_words 0.7346938775510204
+keywords:frequency 0.7857142857142857
+keywords:letter_frequency 0.6363636363636364
+language:response_language 0.5806451612903226
+length_constraints:nth_paragraph_first_word 0.08333333333333333
+length_constraints:number_paragraphs 0.18518518518518517
+length_constraints:number_sentences 0.5
+length_constraints:number_words 0.6153846153846154
+punctuation:no_comma 0.21212121212121213
+startend:end_checker 0.6923076923076923
+startend:quotation 0.5853658536585366
