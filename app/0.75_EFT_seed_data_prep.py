@@ -11,13 +11,14 @@ def format_dataset(dataset):
     for _, row in enumerate(dataset):
         response = row['response']
         prompt = row['prompt']
+        rank = row['rank']
         score_match = re.search(r"Score: ([0-5])\b", response)
         if score_match:
             score = score_match.group(1)  # This captures the first group, which is the score
         else:
             score = -1  # Handle cases where no score is found
-        output_data.append((prompt, score, response))
-    return pd.DataFrame(output_data, columns=['prompt', 'score', 'response'])
+        output_data.append((prompt, score, response, rank))
+    return pd.DataFrame(output_data, columns=['prompt', 'score', 'response', 'rank'])
 
 def filter_df_by_conditions(input_df):
     conditions = [
@@ -30,7 +31,8 @@ def filter_df_by_conditions(input_df):
     ]
 
     # Combine conditions to form a final filter
-    return input_df.loc[conditions]
+    filtered_df = pd.concat([input_df.loc[condition] for condition in conditions])
+    return filtered_df
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
