@@ -5,42 +5,28 @@ import torch
 from transformers import BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer
 import os
 from peft import PeftModel
-import pandas as pd
+import json
 
-config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_use_double_quant=True,
-    bnb_4bit_compute_dtype=torch.bfloat16,
-)
+def get_model_and_tokenizer(model_name_or_path):
+    config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_compute_dtype=torch.bfloat16,
+    )
+    model = AutoModelForCausalLM.from_pretrained(model_name_or_path, quantization_config=config)
+    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=False)
+    return model, tokenizer
 
-model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.2"
-model = AutoModelForCausalLM.from_pretrained(model_name_or_path, quantization_config=config)
+def load_model_with_adapter(base_model, adapter_path):
+    model = PeftModel.from_pretrained(base_model, adapter_path)
+    return model
 
-device = "cuda"
-tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=False)
-
-# With adapter
-relative_path = 'outputs/Mistral-7B-Instruct-v0.2-SFT_baseline'
-adapter_path = os.path.abspath(relative_path)
-model = PeftModel.from_pretrained(model, adapter_path)
-model.eval()
-
-# Assuming the files are in the same directory as this script, load in the DS
-script_dir = os.path.dirname(os.path.abspath(__file__))
-input_ds_location = os.path.join(script_dir, "EFT_seed_data_input.jsonl")
-input_dataset = Dataset.from_json(input_ds_location)
-
-output_data = []
-
-# Go thorugh dataset
-def format_dataset(dataset, model, tokenizer):
-    total_entries = len(dataset)
-    for idx, row in enumerate(dataset):
-        question = row["question"]
-        answer = row["answer"]
-        # Prompt taken from https://arxiv.org/pdf/2401.10020.pdf
-        prompt = f'''
+# Prompt taken from https://arxiv.org/pdf/2401.10020.pdf
+def format_prompt(ds_row):
+    question = ds_row["question"]
+    answer = ds_row["answer"]
+    prompt = f'''
 Review the user’s question and the corresponding response using the additive 5-point
 scoring system described below. Points are accumulated based on the satisfaction of each
 criterion:
@@ -66,31 +52,64 @@ Remember to assess from the AI Assistant perspective, utilizing web search knowl
 necessary. To evaluate the response in alignment with this additive scoring model, we’ll
 systematically attribute points based on the outlined criteria.
         '''
-        model_inputs = tokenizer(prompt, return_tensors="pt")
+    return prompt
 
-        tokens = model_inputs["input_ids"].to(device)
+def get_line_count_in_file(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            return sum(1 for _ in file)
+    except FileNotFoundError:
+        return 0
 
-        # Note the length of the input
-        input_length = tokens.shape[1]
+def model_generate_save(dataset, model, tokenizer, output_file_path):
+    ds_lenght = len(dataset)
+    start_id = get_line_count_in_file(output_file_path)
 
-        generation_output = model.generate(
-            tokens,
-            # do_sample=True, # Picks tokens from the prob. distribution for more creative responses
-            # temperature=0.7, # randomness in sampling (higher temp, more creative, but more random, lower, more predictable), effects logits
-            # top_p=0.9, # Limits the set of posible next tokens. Does so by cumulatively selecting the most probable tokens from a prob. distribution until it reaches the limit
-            # top_k=20,   # Limits the options to the {top_k} most likely options
-            max_new_tokens=115, # Output max length
-            pad_token_id=tokenizer.eos_token_id
-        )
-        # Decode only the newly generated tokens, ignoring the input part
-        # Subtract input_length from the generated_ids' length to get only new tokens
-        new_tokens = generation_output[0, input_length:].tolist()  # Get only the new token ids
-        output = tokenizer.decode(new_tokens, skip_special_tokens=True)
-        # TODO include rank
-        output_data.append((prompt, output))
-        print(f"Processing: {idx+1}/{total_entries}")
-    return pd.DataFrame(output_data, columns=['prompt', 'response']) # Return as prompt, response
+    if start_id >= ds_lenght:
+        print("No new data to process.")
+        return
 
-output_df = format_dataset(input_dataset, model, tokenizer)
-output_file_path = os.path.join(script_dir, "EFT_seed_data.jsonl")
-output_df.to_json(output_file_path, orient="records", lines=True)
+    dataset = dataset.select(range(start_id, ds_lenght))
+
+    with open(output_file_path, "a") as file:
+        for idx, row in enumerate(dataset, start=start_id):
+            print(f"Processing: {idx+1}/{ds_lenght}")
+            prompt = format_prompt(row)
+            rank = row["rank"]
+            
+            model_inputs = tokenizer(prompt, return_tensors="pt")
+            tokens = model_inputs["input_ids"].to("cuda")
+            input_length = tokens.shape[1]
+
+            generation_output = model.generate(
+                tokens,
+                max_new_tokens=115, 
+                pad_token_id=tokenizer.eos_token_id
+            )
+            new_tokens = generation_output[0, input_length:].tolist()  # Get only the new token ids
+            output = tokenizer.decode(new_tokens, skip_special_tokens=True)
+
+            result = json.dumps({
+                    "prompt": prompt,
+                    "response": output,
+                    "rank": rank
+                })
+            file.write(result + '\n')
+
+def main():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    input_ds_location = os.path.join(script_dir, "datasets/EFT_seed_data/EFT_seed_data_input.jsonl")
+    output_file_path = os.path.join(script_dir, "datasets/EFT_seed_data/EFT_seed_data_raw_gen.jsonl")
+    input_dataset = Dataset.from_json(input_ds_location)
+
+    model_name_or_path = "mistralai/Mistral-7B-v0.1"
+    model, tokenizer = get_model_and_tokenizer(model_name_or_path)
+
+    adapter_path = os.path.join(script_dir, '../outputs/Mistral-7B-v0.1-SFT_baseline_IFT')
+    model = load_model_with_adapter(model, adapter_path)
+    model.eval()
+
+    model_generate_save(input_dataset, model, tokenizer, output_file_path)
+
+if __name__ == "__main__":
+    main()

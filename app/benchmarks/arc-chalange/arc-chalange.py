@@ -104,10 +104,10 @@ def main():
     adapter_name = "None" # TODO add shell params
     dataset = load_dataset('ai2_arc', 'ARC-Challenge', split="test")
 
-    model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.2"
+    model_name_or_path = "mistralai/Mistral-7B-v0.1"
     model, tokenizer = get_model_and_tokenizer(model_name_or_path)
 
-    adapter_name = 'Mistral-7B-Instruct-v0.2-SFT_baseline-DPO-M1'
+    adapter_name = 'Mistral-7B-v0.1-SFT_baseline_IFT'
     adapter_path = os.path.join(script_dir, f'../../../outputs/{adapter_name}')
     model = load_model_with_adapter(model, adapter_path)
     model.eval()

@@ -2,7 +2,8 @@ from datasets import load_dataset
 import pandas as pd
 import os
 
-# This code prepares the IFT dataset ready for SFT and EFT prompt data that will be used for EFT seed data  
+# This code gets the IFT and EFT(input) seed data from OpenAssistant dataset. EFT data gets generated in the 0.5 file
+
 dataset = load_dataset("OpenAssistant/oasst2")
 df = pd.DataFrame(dataset['train'])
 
@@ -30,6 +31,7 @@ eft_seed_data = conversation_pairs_eft.groupby('rank_y').apply(lambda x: x.sampl
 eft_seed_data = eft_seed_data[['text_x', 'text_y', 'rank_y']]
 eft_seed_data.columns = ['question', 'answer', 'rank']
 
+# TODO: fix up this part of the script, migth be useful for data visulization
 # Distribution of samples per rank
 # rank_counts = eft_seed_data['rank_y'].value_counts()
 # print("EFT Data rank distribution:")
