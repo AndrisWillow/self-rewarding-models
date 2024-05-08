@@ -66,8 +66,6 @@ def gen_data_for_eval(dataset, model, tokenizer, output_file_path):
             })
             file.write(result + '\n')
 
-    return pd.DataFrame(output_data, columns=['prompt', 'response']) # Return as prompt, response
-
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
