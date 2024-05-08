@@ -1,8 +1,0 @@
-{
-    "model": "mistralai/Mistral-7B-Instruct-v0.2",
-    "adapter": "/home/andris/src/Self_rewarding_LLM/app/benchmarks/arc-chalange/../../../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline-DPO-M1",
-    "result": 0.4069965870307167,
-    "failed_generations": 695,
-    "total_rows_evaluated": 1172,
-    "total_correct_guesses": 477
-}
