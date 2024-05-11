@@ -12,7 +12,7 @@ def format_dataset(dataset):
         response = row['response']
         prompt = row['prompt']
         rank = row['rank']
-        score_match = re.search(r"Score: ([0-5])\b", response)
+        score_match = re.search(r"Score: ([0-5])\b", response, re.IGNORECASE) # re.IGNORECASE - to be case insensetive
         if score_match:
             score = score_match.group(1)  # This captures the first group, which is the score
         else:
@@ -36,8 +36,8 @@ def filter_df_by_conditions(input_df):
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    input_ds_location = os.path.join(script_dir, "datasets/EFT_seed_data/EFT_seed_data_raw_gen.jsonl")
-    output_ds_location = os.path.join(script_dir, "datasets/EFT_seed_data/EFT_seed_data.jsonl")
+    input_ds_location = os.path.join(script_dir, "datasets/EFT_seed_data/EFT_seed_data_raw_gen-Lamma3-8B-instruct.jsonl")
+    output_ds_location = os.path.join(script_dir, "datasets/EFT_seed_data/EFT_seed_data-Lamma3-8B-instruct.jsonl")
     input_dataset = Dataset.from_json(input_ds_location)
 
     output_df = format_dataset(input_dataset)

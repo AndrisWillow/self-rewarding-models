@@ -75,10 +75,10 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     input_ds_location = os.path.join(script_dir, "datasets/generated_prompts/unique_prompts.jsonl")
     output_file_path = os.path.join(script_dir, "datasets/generated_responses/generated_responses.jsonl")
-    adapter_path = os.path.join(script_dir, '../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT')
+    adapter_path = os.path.join(script_dir, '../outputs/Mistral-7B-v0.1-SFT_baseline_IFT+EFT')
     input_ds = Dataset.from_json(input_ds_location)
 
-    model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.2"
+    model_name_or_path = "mistralai/Mistral-7B-v0.1"
     model, tokenizer = initialize_model_and_tokenizer(model_name_or_path)
     model = load_model_with_adapter(model, adapter_path)
     model.eval()  # Sets the model to evaluation mode, affecting layers like dropout

@@ -8,13 +8,14 @@ from peft import PeftModel
 import json
 
 def get_model_and_tokenizer(model_name_or_path):
-    config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_compute_dtype=torch.bfloat16,
-    )
-    model = AutoModelForCausalLM.from_pretrained(model_name_or_path, quantization_config=config)
+    # config = BitsAndBytesConfig(
+    #     load_in_4bit=True,
+    #     bnb_4bit_quant_type="nf4",
+    #     bnb_4bit_use_double_quant=True,
+    #     bnb_4bit_compute_dtype=torch.bfloat16,
+    # )
+    # model = AutoModelForCausalLM.from_pretrained(model_name_or_path, quantization_config=config)
+    model = AutoModelForCausalLM.from_pretrained(model_name_or_path, device_map="auto")
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=False)
     return model, tokenizer
 
@@ -46,8 +47,8 @@ demonstrating a high-quality, engaging, and insightful answer.
 User: {question}
 <response>{answer}</response>
 After examining the user’s instruction and the response:
+- output the score of the evaluation using this exact format: "score: <total points>", where <total points> is between 0 and 5
 - Briefly justify your total score, up to 100 words.
-- Conclude with the score using the format: “Score: <total points>”
 Remember to assess from the AI Assistant perspective, utilizing web search knowledge as
 necessary. To evaluate the response in alignment with this additive scoring model, we’ll
 systematically attribute points based on the outlined criteria.
@@ -102,11 +103,11 @@ def main():
     output_file_path = os.path.join(script_dir, "datasets/EFT_seed_data/EFT_seed_data_raw_gen.jsonl")
     input_dataset = Dataset.from_json(input_ds_location)
 
-    model_name_or_path = "mistralai/Mistral-7B-v0.1"
+    model_name_or_path = "meta-llama/Meta-Llama-3-8B-Instruct"
     model, tokenizer = get_model_and_tokenizer(model_name_or_path)
 
-    adapter_path = os.path.join(script_dir, '../outputs/Mistral-7B-v0.1-SFT_baseline_IFT')
-    model = load_model_with_adapter(model, adapter_path)
+    # adapter_path = os.path.join(script_dir, '../outputs/Mistral-7B-v0.1-SFT_baseline_IFT')
+    # model = load_model_with_adapter(model, adapter_path)
     model.eval()
 
     model_generate_save(input_dataset, model, tokenizer, output_file_path)

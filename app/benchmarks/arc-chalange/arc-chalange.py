@@ -73,7 +73,7 @@ def eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, a
 
         outputs = model_generate_output_batched(model, tokenizer, prompts)
         for output, answer_key in zip(outputs, answer_keys):
-            # print(output, answer_key)
+            print(output, answer_key)
             match = answer_regex.search(output)
             if match:
                 if match.group() == answer_key:
@@ -107,7 +107,7 @@ def main():
     model_name_or_path = "mistralai/Mistral-7B-v0.1"
     model, tokenizer = get_model_and_tokenizer(model_name_or_path)
 
-    adapter_name = 'Mistral-7B-v0.1-SFT_baseline_IFT'
+    adapter_name = 'Mistral-7B-v0.1-SFT_baseline_IFT+EFT'
     adapter_path = os.path.join(script_dir, f'../../../outputs/{adapter_name}')
     model = load_model_with_adapter(model, adapter_path)
     model.eval()

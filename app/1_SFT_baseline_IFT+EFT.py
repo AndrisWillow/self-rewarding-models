@@ -63,7 +63,7 @@ def get_lora_configured_model(model):
 def get_trainer(model, tokenizer, train_dataset, output_dir):
     """ Gets the trainer class with all of the paramaters defined """
     training_args = TrainingArguments(
-        per_device_train_batch_size=1,
+        per_device_train_batch_size=8,
         # per_device_eval_batch_size=1, # No eval
         gradient_accumulation_steps=4,
         num_train_epochs=1, # More than 1 epoch seems to overfit on the training data already
@@ -84,7 +84,7 @@ def get_trainer(model, tokenizer, train_dataset, output_dir):
     return trainer
 
 def main():
-    model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.2"
+    model_name_or_path = "mistralai/Mistral-7B-v0.1"
     model, tokenizer = get_model_and_tokenizer(model_name_or_path)
 
     # Preparing model for training 
@@ -96,8 +96,8 @@ def main():
     output_dir = "outputs"
 
     # TODO: maybe this merge will not be necessary /Temp code
-    train_file_ds = os.path.join(script_dir, "datasets/0_IFT_seed_data.jsonl")
-    train_file_ds_2 = os.path.join(script_dir, "datasets/EFT/EFT_seed_data_final.jsonl")
+    train_file_ds = os.path.join(script_dir, "datasets/IFT_seed_data/IFT_seed_data.jsonl")
+    train_file_ds_2 = os.path.join(script_dir, "datasets/EFT_seed_data/EFT_seed_data-Lamma3-8B-instruct.jsonl")
     train_ds_tokenized = get_tokenized_ds2(train_file_ds, train_file_ds_2, tokenizer)
     # /Temp code
 
@@ -112,7 +112,7 @@ def main():
     trainer = get_trainer(model, tokenizer, train_ds_tokenized, output_dir)
     trainer.train()
 
-    output_file_name = "/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT"
+    output_file_name = "/Mistral-7B-v0.1-SFT_baseline_IFT+EFT"
     model.save_pretrained(output_dir + output_file_name)
     tokenizer.save_pretrained(output_dir + output_file_name)
 
