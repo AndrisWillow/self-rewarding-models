@@ -1,7 +1,0 @@
-main, test dataset of openbookqa
-
-TheBloke/Mistral-7B-Instruct-v0.2-AWQ
-0.454
-
-TheBloke/Mistral-7B-v0.1-AWQ
-Only outputting '1' or ' '
