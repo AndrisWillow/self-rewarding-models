@@ -108,7 +108,7 @@ def main():
         adapter_path = os.path.join(script_dir, f'../../../outputs/{adapter_name}')
         model = load_model_with_adapter(model, adapter_path)
 
-    dataset = load_dataset('ai2_arc', 'ARC-Challenge', split="test")
+    dataset = load_dataset('ai2_arc', 'ARC-Easy', split="test")
     
     eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, adapter_name, result_name, batch_size=1)
 

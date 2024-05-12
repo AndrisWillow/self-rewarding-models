@@ -23,10 +23,10 @@ def load_model_with_adapter(base_model, adapter_path):
     return PeftModel.from_pretrained(base_model, adapter_path)
 
 def format_prompt(ds_row):
-    question = ds_row['question']
+    question = ds_row['question_stem']
     choices_formatted = " ".join([f"{label}: {text}" for label, text in zip(ds_row['choices']['label'], ds_row['choices']['text'])])
-    prompt = f'''Answer this multiple choice question. 
-Question: {question} Possible answers: {choices_formatted}. Output only the corresponding letter or number to the correct answer. Answer: ''' 
+    prompt=f'''Answer this multiple choice question.
+Question: {question} Posible answers: {choices_formatted} Output only the corresponding letter to the correct answer. Answer: '''
     return prompt
 
 # TODO fix batching - currently adding a larger size for the batch means some prompts get extra padding to match the largest batched element.
@@ -52,7 +52,7 @@ def eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, a
     model.eval() # setting model in eval form
     score = failed_generations = 0
     total_rows_to_evaluate = len(dataset)
-    answer_regex = re.compile(r"[ABCD1234]") #posible answers, taken from arc dataset
+    answer_regex = re.compile(r"[ABCD]") #posible answers, taken from arc dataset
 
     for idx in range(0, total_rows_to_evaluate, batch_size):
         batch_end = min(idx + batch_size, total_rows_to_evaluate)
@@ -108,7 +108,7 @@ def main():
         adapter_path = os.path.join(script_dir, f'../../../outputs/{adapter_name}')
         model = load_model_with_adapter(model, adapter_path)
 
-    dataset = load_dataset('ai2_arc', 'ARC-Challenge', split="test")
+    dataset = load_dataset("allenai/openbookqa", "main", split="test")
     
     eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, adapter_name, result_name, batch_size=1)
 
