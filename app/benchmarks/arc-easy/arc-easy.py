@@ -65,7 +65,9 @@ def eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, a
             # print(output, answer_key)
             match = answer_regex.search(output)
             if match:
-                if match.group() == answer_key:
+                model_answer = str(match.group().strip())
+                answer_key = str(answer_key)
+                if model_answer == answer_key:
                     score += 1
             else:
                 failed_generations += 1

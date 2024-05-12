@@ -8,6 +8,9 @@ import json
 from datetime import datetime
 import argparse
 
+#
+# For now this code is broken
+#
 def get_model_and_tokenizer(model_name_or_path):
     config = BitsAndBytesConfig(
         load_in_4bit=True,
@@ -23,10 +26,13 @@ def load_model_with_adapter(base_model, adapter_path):
     return PeftModel.from_pretrained(base_model, adapter_path)
 
 def format_prompt(ds_row):
-    question = ds_row['question_stem']
-    choices_formatted = " ".join([f"{label}: {text}" for label, text in zip(ds_row['choices']['label'], ds_row['choices']['text'])])
-    prompt=f'''Answer this multiple choice question.
-Question: {question} Posible answers: {choices_formatted} Output only the corresponding letter to the correct answer. Answer: '''
+    context = ds_row['goal']
+    answerA = ds_row['sol1']
+    answerB = ds_row['sol2']
+    choices_formatted = f'0: {answerA}, 1: {answerB}'
+
+    prompt=f'''Answer this multiple choice question about physical interactions. Situation: {context}
+Posible answers: {choices_formatted} Output only the corresponding number to the correct answer. Answer: '''
     return prompt
 
 # TODO fix batching - currently adding a larger size for the batch means some prompts get extra padding to match the largest batched element.
@@ -52,13 +58,13 @@ def eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, a
     model.eval() # setting model in eval form
     score = failed_generations = 0
     total_rows_to_evaluate = len(dataset)
-    answer_regex = re.compile(r"[ABCD]") #posible answers
+    answer_regex = re.compile(r"[01]")
 
     for idx in range(0, total_rows_to_evaluate, batch_size):
         batch_end = min(idx + batch_size, total_rows_to_evaluate)
 
         prompts = [format_prompt(dataset[row]) for row in range(idx, batch_end)]
-        answer_keys = [dataset[row]['answerKey'] for row in range(idx, batch_end)]
+        answer_keys = [dataset[row]['label'] for row in range(idx, batch_end)]
 
         outputs = model_generate_output_batched(model, tokenizer, prompts)
         for output, answer_key in zip(outputs, answer_keys):
@@ -67,6 +73,7 @@ def eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, a
             if match:
                 model_answer = str(match.group().strip())
                 answer_key = str(answer_key)
+                print(f"{model_answer}={answer_key}")
                 if model_answer == answer_key:
                     score += 1
             else:
@@ -110,7 +117,8 @@ def main():
         adapter_path = os.path.join(script_dir, f'../../../outputs/{adapter_name}')
         model = load_model_with_adapter(model, adapter_path)
 
-    dataset = load_dataset("allenai/openbookqa", "main", split="test")
+    # TODO: find out why it crashes with this error: TypeError: 'NoneType' object is not callable
+    dataset = load_dataset('piqa', split="validation", trust_remote_code=True) # trust_remote_code=True necessary for piqa
     
     eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, adapter_name, result_name, batch_size=1)
 

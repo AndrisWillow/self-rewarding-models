@@ -6,7 +6,7 @@ BASE_MODEL=$1
 RESULT_NAME=$2
 ADAPTER_PATH="${3:-None}" # Optional, get the adapter from the /outputs directory
 
-# # Arc-challange
+# Arc-challange
 python3 arc-chalange/arc-chalange.py --model_name_or_path $BASE_MODEL --result_name $RESULT_NAME --adapter_name $ADAPTER_PATH
 
 # Arc-easy
@@ -17,3 +17,15 @@ python3 openbookqa/openbookqa.py --model_name_or_path $BASE_MODEL --result_name 
 
 # siqa
 python3 siqa/siqa.py --model_name_or_path $BASE_MODEL --result_name $RESULT_NAME --adapter_name $ADAPTER_PATH
+
+# hellaswag
+python3 hellaswag/hellaswag.py --model_name_or_path $BASE_MODEL --result_name $RESULT_NAME --adapter_name $ADAPTER_PATH
+
+# MMLU
+python3 MMLU/MMLU.py --model_name_or_path $BASE_MODEL --result_name $RESULT_NAME --adapter_name $ADAPTER_PATH
+
+# GSM8k
+python3 GSM8k/GSM8k.py --model_name_or_path $BASE_MODEL --result_name $RESULT_NAME --adapter_name $ADAPTER_PATH
+
+# piqa - Seems to be broken
+# python3 piqa/piqa.py --model_name_or_path $BASE_MODEL --result_name $RESULT_NAME --adapter_name $ADAPTER_PATH

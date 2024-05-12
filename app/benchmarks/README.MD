@@ -2,7 +2,7 @@
 
 ## run-all
 This script will execute all of the benchmarks in this directory except for
-Hellaswag, IFEval and alpaca-eval that need to be evaluated externally.
+IFEval and alpaca-eval that need to be evaluated externally.
 More info about them in their respective directories
 
 ## To launch the script
