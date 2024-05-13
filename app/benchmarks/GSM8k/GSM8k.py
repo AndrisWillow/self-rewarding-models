@@ -39,7 +39,7 @@ def model_generate_output_batched(model, tokenizer, prompts):
 
     generation_output = model.generate(
         tokens,
-        max_new_tokens=160, # Genearting a few tokens, because there can be noise like new lines etc.
+        max_new_tokens=160, 
         pad_token_id=tokenizer.pad_token_id,
     )
 
@@ -65,7 +65,6 @@ def eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, a
 
             answer_key_match = output_format_regex.search(answer_key)
             output_match = answer_regex.search(output)
-            extracted_answer_key = str(answer_key_match.group(1).strip())
             if output_match and answer_key_match:
                 extracted_output = str(output_match.group(1).strip())
                 extracted_answer_key = str(answer_key_match.group(1).strip())
