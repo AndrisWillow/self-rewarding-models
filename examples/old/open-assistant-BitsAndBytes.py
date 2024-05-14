@@ -44,7 +44,7 @@ model = prepare_model_for_kbit_training(model)
 
 config = LoraConfig(
     r=16, #As bigger the R bigger the parameters to train.
-    lora_alpha=16, #default 16, should not be modified. a scaling factor that adjusts the magnitude of the weight matrix. It seems that as higher more weight have the new training.
+    lora_alpha=16, #default 16, should not be modified. a scaling factor that adjusts the magnitude of the weight matrix.
     target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj"], # All layers for mistral "q_proj", "k_proj", "v_proj", "o_proj", "gate_proj"
     lora_dropout=0.05, #Helps to avoid Overfitting. #TODO how does it do that?
     bias="none",  # this specifies if the bias parameter should be trained.
