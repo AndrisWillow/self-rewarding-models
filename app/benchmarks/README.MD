@@ -12,6 +12,7 @@ Launch from /app/benchmarks directory:
 
 ## Example scipt usages that corresond to the results in my paper:
 
+## Experiment 1:
 ### Mistral-7B-Instruct-v0.2-M0:
 ./run-all.sh mistralai/Mistral-7B-Instruct-v0.2 Mistral-7B-Instruct-v0.2-M0
 
@@ -20,3 +21,7 @@ Launch from /app/benchmarks directory:
 
 ### Mistral-7B-Instruct-v0.2-M2:
 ./run-all.sh mistralai/Mistral-7B-Instruct-v0.2 Mistral-7B-Instruct-v0.2-M2 Mistral-7B-Instruct-v0.2-SFT_baseline-DPO-M2
+
+## Experiment 2:
+### Mistral-7B-v0.1-M0:
+./run-all.sh mistralai/Mistral-7B-v0.1 Mistral-7B-v0.1-M0

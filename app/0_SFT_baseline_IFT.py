@@ -32,7 +32,7 @@ train_ds_tokenized = train_ds.map(lambda example: tokenizer(example["text"], max
 
 # Preparing model for training
 model.gradient_checkpointing_enable() 
-model = prepare_model_for_kbit_training(model)
+model = prepare_model_for_kbit_training(model) # use gradient checkpointing to save memory at the expense of slower backward pass.
 
 config = LoraConfig(
     r=16, #As bigger the R bigger the parameters to train.

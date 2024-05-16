@@ -10,7 +10,7 @@ def get_model_and_tokenizer(model_name_or_path):
     """ Initialize and return the model and tokenizer with specific configuration. """
     config = BitsAndBytesConfig(
         load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",# for higher precision
+        bnb_4bit_quant_type="nf4",# fp4 or nf4 (normal float (Introduced: https://arxiv.org/pdf/2305.14314)) for higher precision
         bnb_4bit_use_double_quant=True, # Helpes memory usage
         bnb_4bit_compute_dtype=torch.bfloat16, # Should provide faster learning
     )
