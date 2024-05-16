@@ -1,0 +1,8 @@
+{
+    "model": "mistralai/Mistral-7B-v0.1",
+    "adapter": "Mistral-7B-v0.1-SFT_baseline_IFT+EFT",
+    "result": 0.41655048795060745,
+    "failed_generations": 2,
+    "total_rows_evaluated": 10042,
+    "total_correct_guesses": 4183
+}

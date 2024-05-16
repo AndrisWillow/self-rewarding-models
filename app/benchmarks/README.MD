@@ -25,3 +25,9 @@ Launch from /app/benchmarks directory:
 ## Experiment 2:
 ### Mistral-7B-v0.1-M0:
 ./run-all.sh mistralai/Mistral-7B-v0.1 Mistral-7B-v0.1-M0
+
+### Mistral-7B-v0.1-M1:
+./run-all.sh mistralai/Mistral-7B-v0.1 Mistral-7B-v0.1-M1 Mistral-7B-v0.1-SFT_baseline_IFT+EFT
+
+### Mistral-7B-v0.1-M2:
+./run-all.sh mistralai/Mistral-7B-v0.1 Mistral-7B-v0.1-M1 Mistral-7B-v0.1-SFT_baseline-DPO-M2
