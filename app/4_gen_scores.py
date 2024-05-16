@@ -114,14 +114,20 @@ def model_generate_samples_batched(model, tokenizer, prompt_text, num_samples):
     return output
 
 def generate_output(input_ds, model, tokenizer, completion_sample_to_gen, output_file_path):
+    ds_rows_to_process = len(input_ds)
     with open(output_file_path, "a") as file:
         start_id = get_line_count_in_file(output_file_path) # We have an exact corespondance of line counts in both files
-        for idx, _ in enumerate(input_ds, start=start_id):
-            print(f"Processing: {idx+1}/{len(input_ds)}")
+        if start_id >= ds_rows_to_process:
+            print("No new data to process.")
+            return
+        dataset = input_ds.select(range(start_id, ds_rows_to_process))
+        
+        for idx, row in enumerate(dataset, start=start_id):
+            print(f"Processing: {idx+1}/{ds_rows_to_process}")
 
-            prompt_id = input_ds[idx]["prompt_id"] # TODO fix out of bounds error
-            prompt = input_ds[idx]["prompt"]
-            response = input_ds[idx]["response"]
+            prompt_id = row["prompt_id"] # TODO fix out of bounds error
+            prompt = row["prompt"]
+            response = row["response"]
 
             full_prompt = format_prompt(prompt, response)
             output_samples = model_generate_samples_batched(model, tokenizer, full_prompt, completion_sample_to_gen)

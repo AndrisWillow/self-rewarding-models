@@ -39,15 +39,20 @@ def find_last_prompt_id(file_path):
         return 0
 # TODO: split up this function
 def generate_and_save_prompts_batched(input_ds, model, tokenizer, completion_sample_to_gen, output_file_path):
-    start_id = find_last_prompt_id(output_file_path)
     ds_rows_to_process = len(input_ds)
+    start_id = find_last_prompt_id(output_file_path)
+    if start_id >= ds_rows_to_process:
+        print("No new data to process.")
+        return
+
+    dataset = input_ds.select(range(start_id, ds_rows_to_process))
 
     with open(output_file_path, "a") as file:
-        for idx, row in enumerate(input_ds, start=start_id):
+        for idx, row in enumerate(dataset, start=start_id):
             prompt_id = idx + 1 # Adding a prompt id to later group by
             print(f"Processing: {prompt_id}/{ds_rows_to_process}")
             
-            question = input_ds[idx]["prompt"]  # TODO: fix out of bounds error, doesn't affect result
+            question = row["prompt"]  # TODO: fix out of bounds error, doesn't affect result
             prompt = f"User: {question} Assistant: "
             prompts = [prompt] * completion_sample_to_gen
 
