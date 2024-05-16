@@ -1,0 +1,8 @@
+{
+    "model": "mistralai/Mistral-7B-Instruct-v0.2",
+    "adapter": "None",
+    "result": 0.502,
+    "failed_generations": 10,
+    "total_rows_evaluated": 500,
+    "total_correct_guesses": 251
+}

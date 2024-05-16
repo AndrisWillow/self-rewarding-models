@@ -6,6 +6,7 @@ from peft import PeftModel
 import re
 import json
 from datetime import datetime
+import argparse
 
 def get_model_and_tokenizer(model_name_or_path):
     config = BitsAndBytesConfig(
@@ -28,6 +29,8 @@ def format_prompt(ds_row):
 Question: {question} Possible answers: {choices_formatted}. Output only the corresponding letter or number to the correct answer. Answer: ''' 
     return prompt
 
+# TODO fix batching - currently adding a larger size for the batch means some prompts get extra padding to match the largest batched element.
+# This seems to cause bad generation
 def model_generate_output_batched(model, tokenizer, prompts):
     tokenizer.pad_token = tokenizer.eos_token
     model_inputs = tokenizer(prompts, return_tensors="pt", padding=True)
@@ -35,32 +38,18 @@ def model_generate_output_batched(model, tokenizer, prompts):
     tokens = model_inputs["input_ids"].to(model.device)
     attention_mask = model_inputs["attention_mask"].to(model.device)
 
-    # print("tokens shape:", tokens.shape)  # Debug print
-    # print("attention_mask shape:", attention_mask.shape)  # Debug print
-
-    # print("Tokens before padding:")
-    # for idx, token_ids in enumerate(tokens):
-    #     print(f"Input {idx + 1} - Input IDs:", token_ids)
-    #     print(f"Input {idx + 1} - Attention Mask:", attention_mask[idx])
-    #     print("Decoded input:", tokenizer.decode(token_ids, skip_special_tokens=True))
-    #     print("\n")
-
     generation_output = model.generate(
         tokens,
         max_new_tokens=3, # Genearting a few tokens, because there can be noise like new lines etc.
         pad_token_id=tokenizer.pad_token_id,
     )
 
-    # print("Generated tokens:")
-    # for token_ids in generation_output:
-    #     print(tokenizer.decode(token_ids, skip_special_tokens=True))
     output = tokenizer.batch_decode(generation_output[:, tokens.shape[1]:], skip_special_tokens=True)
-    # print("Output")
-    # print(output)
     return output
 
 # Evaluating the benchmark in a loose way by extracting answers, because the model can be noisy and may output additional things not just an answer
-def eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, adapter="None", batch_size=1):
+def eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, adapter, result_name, batch_size=1):
+    model.eval() # setting model in eval form
     score = failed_generations = 0
     total_rows_to_evaluate = len(dataset)
     answer_regex = re.compile(r"[ABCD1234]") #posible answers, taken from arc dataset
@@ -76,15 +65,17 @@ def eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, a
             print(output, answer_key)
             match = answer_regex.search(output)
             if match:
-                if match.group() == answer_key:
+                model_answer = str(match.group().strip())
+                answer_key = str(answer_key)
+                if model_answer == answer_key:
                     score += 1
             else:
                 failed_generations += 1
 
-        print(f"Processed batch ending at index {batch_end}, current score: {score}, failed generations: {failed_generations}")
+        print(f"Processed {batch_end}/{total_rows_to_evaluate}, current score: {score}, failed generations: {failed_generations}")
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    output_file = f"benchmark_results{timestamp}.json" 
+    output_file = f"results-{result_name}-{timestamp}.json" 
     result = score / total_rows_to_evaluate
     result_data = {
         "model": model_name_or_path,
@@ -101,17 +92,27 @@ def eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, a
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    adapter_name = "None" # TODO add shell params
-    dataset = load_dataset('ai2_arc', 'ARC-Challenge', split="test")
+    parser = argparse.ArgumentParser(description="Run model evaluation with optional adapter.")
+    parser.add_argument("--model_name_or_path", type=str, required=True,
+                        help="Model name or path for loading the model")
+    parser.add_argument("--result_name", type=str, default="None",
+                        help="Adapter name to be appended to model path if not 'None'")
+    parser.add_argument("--adapter_name", type=str, default="None",
+                        help="Adapter name to be appended to model path if not 'None'")
+    args = parser.parse_args()
+    model_name_or_path = args.model_name_or_path
+    result_name = args.result_name
+    adapter_name = args.adapter_name
 
-    model_name_or_path = "mistralai/Mistral-7B-v0.1"
     model, tokenizer = get_model_and_tokenizer(model_name_or_path)
 
-    adapter_name = 'Mistral-7B-v0.1-SFT_baseline_IFT+EFT'
-    adapter_path = os.path.join(script_dir, f'../../../outputs/{adapter_name}')
-    model = load_model_with_adapter(model, adapter_path)
-    model.eval()
-    eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, adapter_name, batch_size=1)
+    if adapter_name != "None":
+        adapter_path = os.path.join(script_dir, f'../../../outputs/{adapter_name}')
+        model = load_model_with_adapter(model, adapter_path)
+
+    dataset = load_dataset('ai2_arc', 'ARC-Challenge', split="test")
+    
+    eval_benchmark_save_results(model, tokenizer, dataset, model_name_or_path, adapter_name, result_name, batch_size=1)
 
 if __name__ == "__main__":
     main()
