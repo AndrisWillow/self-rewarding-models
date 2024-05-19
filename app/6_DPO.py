@@ -8,6 +8,7 @@ from peft import (
     LoraConfig,
     TaskType,
     prepare_model_for_kbit_training,
+    PeftModel
 )
 from trl import DPOTrainer
 import os
@@ -29,6 +30,11 @@ def load_model_and_tokenizer(model_name_or_path):
     tokenizer.pad_token = tokenizer.eos_token
     return model, tokenizer
 
+# Getting this warning: 
+# No chat template is defined for this tokenizer - using the default template for the LlamaTokenizerFast class. 
+# If the default is not appropriate for your model, please set `tokenizer.chat_template` 
+# to an appropriate template. See https://huggingface.co/docs/transformers/main/chat_templating for more information
+
 def preprocess_dataset(dataset, tokenizer):
     """ Preprocess dataset entries by applying tokenizer and modifications. """
     def get_prompt(example):
@@ -43,7 +49,7 @@ def preprocess_dataset(dataset, tokenizer):
 
 # from https://github.com/mlabonne/llm-course/blob/main/Fine_tune_a_Mistral_7b_model_with_DPO.ipynb
 # Also from https://www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2
-def create_peft_config(model):
+def create_peft_config():
     peft_config = LoraConfig(
         task_type=TaskType.CAUSAL_LM,
         inference_mode=False,
@@ -53,18 +59,12 @@ def create_peft_config(model):
         lora_dropout=0.05, #Helps to avoid Overfitting. #TODO how does it do that?
         bias="none",  # this specifies if the bias parameter should be trained.
     )
-
-    model = prepare_model_for_kbit_training(model)
-    model = get_peft_model(model, peft_config)
-
-    model.print_trainable_parameters()
-
-    return model, peft_config
+    return peft_config
 
 def get_trainer(base_model, tokenizer, lora_config, dataset, output_dir):
     training_args = TrainingArguments(
         output_dir=output_dir,
-        per_device_train_batch_size=1,
+        per_device_train_batch_size=4,
         learning_rate=5e-5,
         gradient_accumulation_steps=4,
         gradient_checkpointing=True,
@@ -78,7 +78,8 @@ def get_trainer(base_model, tokenizer, lora_config, dataset, output_dir):
 
     trainer = DPOTrainer(
         base_model,
-        ref_model=None,
+        model_adapter_name="train2",
+        ref_adapter_name="reference",
         args=training_args,
         train_dataset=dataset,
         tokenizer=tokenizer,
@@ -89,21 +90,37 @@ def get_trainer(base_model, tokenizer, lora_config, dataset, output_dir):
     )
     return trainer
 
+# Could not estimate the number of tokens of the input, floating-point operations will not be computed - Is safe to ignore
+
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(script_dir, '../outputs/Mistral-7B-v0.1-SFT_baseline_IFT+EFT')
+    adapter_path = os.path.join(script_dir, '../outputs/Mistral-7B-v0.1-SFT_baseline_IFT+EFT')
+    model_name_or_path = "mistralai/Mistral-7B-v0.1"
     dataset_file = "app/datasets/preference_pairs/preference_pairs.jsonl"
-    output_dir = "outputs/Mistral-7B-v0.1-SFT_baseline-DPO-M1"
+    output_dir = "outputs/Mistral-7B-v0.1-SFT_baseline-DPO-M2-V2"
 
-    base_model, tokenizer = load_model_and_tokenizer(model_path)
+    base_model, tokenizer = load_model_and_tokenizer(model_name_or_path)
     base_model.config.use_cache = False  # To prevent caching during training
 
     dataset = Dataset.from_json(dataset_file)
     dataset = preprocess_dataset(dataset, tokenizer)
+    
+    lora_config = create_peft_config()
 
-    model, lora_config = create_peft_config(base_model)
+    base_model = prepare_model_for_kbit_training(base_model)
 
-    DPO_trainer = get_trainer(model, tokenizer, lora_config, dataset, output_dir)
+    # Load 1st adapter
+    base_model = PeftModel.from_pretrained(
+        base_model,
+        adapter_path,
+        is_trainable=True,
+        adapter_name="train2", # KeyError: "attribute 'train' already exists"
+    )
+
+    # Load 2nd adapter
+    base_model.load_adapter(adapter_path, adapter_name="reference")
+
+    DPO_trainer = get_trainer(base_model, tokenizer, lora_config, dataset, output_dir)
     DPO_trainer.train()
     DPO_trainer.model.save_pretrained(output_dir)
 

@@ -5,23 +5,14 @@
 
 # TODO: Refactor this, add batching
 from datasets import Dataset
-import torch
-from transformers import BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer
 import os
 from peft import PeftModel
 import pandas as pd
 import json
 
-def get_model_and_tokenizer(model_name_or_path):
-    config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_compute_dtype=torch.bfloat16,
-    )
-    model = AutoModelForCausalLM.from_pretrained(model_name_or_path, quantization_config=config)
-    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=False)
-    return model, tokenizer
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'common')))
+from model_config import get_model_and_tokenizer
 
 def load_model_with_adapter(base_model, adapter_path):
     return PeftModel.from_pretrained(base_model, adapter_path)

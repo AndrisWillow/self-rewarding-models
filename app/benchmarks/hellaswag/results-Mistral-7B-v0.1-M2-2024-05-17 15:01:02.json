@@ -1,0 +1,8 @@
+{
+    "model": "mistralai/Mistral-7B-v0.1",
+    "adapter": "Mistral-7B-v0.1-SFT_baseline-DPO-M2",
+    "result": 0.40021907986456884,
+    "failed_generations": 2,
+    "total_rows_evaluated": 10042,
+    "total_correct_guesses": 4019
+}
