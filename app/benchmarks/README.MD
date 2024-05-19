@@ -30,7 +30,8 @@ Launch from /app/benchmarks directory:
 ./run-all.sh mistralai/Mistral-7B-v0.1 Mistral-7B-v0.1-M1 Mistral-7B-v0.1-SFT_baseline_IFT+EFT
 
 ### Mistral-7B-v0.1-M2:
-./run-all.sh mistralai/Mistral-7B-v0.1 Mistral-7B-v0.1-M2 Mistral-7B-v0.1-SFT_baseline-DPO-M2/checkpoint-50
+./run-all.sh mistralai/Mistral-7B-v0.1 Mistral-7B-v0.1-M2 Mistral-7B-v0.1-SFT_baseline-DPO-M2
 
+# Testing:
 ### Mistral-7B-v0.1-M2-V2:
 ./run-all.sh mistralai/Mistral-7B-v0.1 Mistral-7B-v0.1-M2 Mistral-7B-v0.1-SFT_baseline-DPO-M2-V2
