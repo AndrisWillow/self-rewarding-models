@@ -1,0 +1,8 @@
+{
+    "model": "mistralai/Mistral-7B-v0.1",
+    "adapter": "None",
+    "result": 0.224,
+    "failed_generations": 89,
+    "total_rows_evaluated": 500,
+    "total_correct_guesses": 112
+}

@@ -107,8 +107,8 @@ def main():
     model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.2"
     model, tokenizer = get_model_and_tokenizer(model_name_or_path)
     input_df = get_df_from_jsonl(input_ds_location)
-
-    generate_and_save_prompts(input_df, model, tokenizer, 6000, output_file_path)
+    sample_to_gen = 6000
+    generate_and_save_prompts(input_df, model, tokenizer, sample_to_gen, output_file_path)
 
 if __name__ == "__main__":
     main()
