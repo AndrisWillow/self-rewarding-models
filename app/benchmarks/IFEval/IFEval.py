@@ -60,9 +60,9 @@ def gen_data_for_eval(dataset, model, tokenizer, output_file_path):
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    adapter_path = os.path.join(script_dir, '../../../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT')
-    output_file_path = os.path.join(script_dir, "Mistral-7B-Instruct-v0.2-SFT_baseline_IFT+EFT.jsonl")
-    model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.2"
+    adapter_path = os.path.join(script_dir, '../../../outputs/Mistral-7B-v0.1-M2')
+    output_file_path = os.path.join(script_dir, "Mistral-7B-v0.1-M2.jsonl")
+    model_name_or_path = "mistralai/Mistral-7B-v0.1"
 
     input_ds_location = os.path.join(script_dir, "input_data.jsonl")
     input_dataset = Dataset.from_json(input_ds_location)
