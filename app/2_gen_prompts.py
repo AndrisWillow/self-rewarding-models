@@ -30,7 +30,7 @@ def get_df_from_jsonl(file_path):
     return pd.DataFrame(input_dataset)
 
 def generate_prompt(examples):
-    # taken from https://github.com/Oxen-AI/Self-Rewarding-Language-Models/blob/main/scripts/01_gen_prompts.py
+    # inspiration from https://github.com/Oxen-AI/Self-Rewarding-Language-Models/blob/main/scripts/01_gen_prompts.py
     """ Generate a prompt for model input by appending tasks within <task> tags. """
     prompt = """
 Come up with a series of tasks and questions. Only the task/question,
