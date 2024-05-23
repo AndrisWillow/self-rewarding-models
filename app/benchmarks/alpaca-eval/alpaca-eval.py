@@ -77,7 +77,7 @@ def save_responses_as_json(responses, output_file_path):
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     eval_set = datasets.load_dataset("tatsu-lab/alpaca_eval", "alpaca_eval")["eval"]
-    model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.2"
+    model_name_or_path = "mistralai/Mistral-7B-v0.1"
 
     # Gen output for reference model
     adapter_path_2 = os.path.join(script_dir, '../../../outputs/Mistral-7B-v0.1-M1')
