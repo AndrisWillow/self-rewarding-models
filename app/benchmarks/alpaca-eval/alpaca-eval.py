@@ -76,25 +76,27 @@ def save_responses_as_json(responses, output_file_path):
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    adapter_path = os.path.join(script_dir, '../../../outputs/Mistral-7B-Instruct-v0.2-SFT_baseline-DPO-M1')
     eval_set = datasets.load_dataset("tatsu-lab/alpaca_eval", "alpaca_eval")["eval"]
     model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.2"
 
     # Gen output for reference model
+    adapter_path_2 = os.path.join(script_dir, '../../../outputs/Mistral-7B-v0.1-M1')
     base_model, tokenizer = initialize_model_and_tokenizer(model_name_or_path)
-    base_model.eval()
+    trained_model_1 = load_model_with_adapter(base_model, adapter_path_2)
+    trained_model_1.eval()
     output_file_path = os.path.join(script_dir, 'reference_model_outputs.jsonl')
-    model_generate_and_save(eval_set, base_model, tokenizer, output_file_path)
+    model_generate_and_save(eval_set, trained_model_1, tokenizer, output_file_path)
     # Alpaca Eval expects a json file
-    json_file = 'reference_model_outputs.json'
+    json_file = os.path.join(script_dir, 'reference_model_outputs.json')
     convert_jsonl_to_json(output_file_path, json_file)
 
     # Gen output for trained model
-    trained_model = load_model_with_adapter(base_model, adapter_path)
-    trained_model.eval()
+    adapter_path_2 = os.path.join(script_dir, '../../../outputs/Mistral-7B-v0.1-M2')
+    trained_model_2 = load_model_with_adapter(base_model, adapter_path_2)
+    trained_model_2.eval()
     output_file_path = os.path.join(script_dir, 'model_outputs.jsonl')
-    model_generate_and_save(eval_set, trained_model, tokenizer, output_file_path)
-    json_file = 'model_outputs.json'
+    model_generate_and_save(eval_set, trained_model_2, tokenizer, output_file_path)
+    json_file = os.path.join(script_dir, 'model_outputs.json')
     convert_jsonl_to_json(output_file_path, json_file)
 
 if __name__ == "__main__":
