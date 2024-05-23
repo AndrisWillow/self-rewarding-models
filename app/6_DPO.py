@@ -78,8 +78,6 @@ def get_trainer(base_model, tokenizer, lora_config, dataset, output_dir):
 
     trainer = DPOTrainer(
         base_model,
-        model_adapter_name="train2",
-        ref_adapter_name="reference",
         args=training_args,
         train_dataset=dataset,
         tokenizer=tokenizer,
@@ -94,10 +92,9 @@ def get_trainer(base_model, tokenizer, lora_config, dataset, output_dir):
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    adapter_path = os.path.join(script_dir, '../outputs/Mistral-7B-v0.1-SFT_baseline_IFT+EFT')
-    model_name_or_path = "mistralai/Mistral-7B-v0.1"
+    model_name_or_path = os.path.join(script_dir, '../outputs/Mistral-7B-v0.1-M1')
     dataset_file = "app/datasets/preference_pairs/preference_pairs.jsonl"
-    output_dir = "outputs/Mistral-7B-v0.1-SFT_baseline-DPO-M2-V2"
+    output_dir = "outputs/Mistral-7B-v0.1-SFT_baseline-DPO-M2"
 
     base_model, tokenizer = load_model_and_tokenizer(model_name_or_path)
     base_model.config.use_cache = False  # To prevent caching during training
@@ -109,16 +106,6 @@ def main():
 
     base_model = prepare_model_for_kbit_training(base_model)
 
-    # Load 1st adapter
-    base_model = PeftModel.from_pretrained(
-        base_model,
-        adapter_path,
-        is_trainable=True,
-        adapter_name="train2", # KeyError: "attribute 'train' already exists"
-    )
-
-    # Load 2nd adapter
-    base_model.load_adapter(adapter_path, adapter_name="reference")
 
     DPO_trainer = get_trainer(base_model, tokenizer, lora_config, dataset, output_dir)
     DPO_trainer.train()
