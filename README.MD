@@ -6,8 +6,11 @@ Packages:
 pip3 install -r requirements.txt
 ```
 
-Links to Papers:
+## Branches 
+Experiment 2 - contains all of the data relavant to that experiment.
+Main - contains primairly data from the 1st experiment.
 
+Links to Papers (needs to be expanded):
 @article{dettmers2023qlora,
   title={QLoRA: Efficient Finetuning of Quantized LLMs},
   author={Dettmers, Tim and Pagnoni, Artidoro and Holtzman, Ari and Zettlemoyer, Luke},
